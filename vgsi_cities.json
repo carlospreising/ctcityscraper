@@ -1,0 +1,427 @@
+{
+    "Andover, CT": {
+        "url": "https://gis.vgsi.com/andoverct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Bethlehem, CT": {
+        "url": "https://gis.vgsi.com/bethlehemct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Bolton, CT": {
+        "url": "https://gis.vgsi.com/BoltonCT/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Branford, CT": {
+        "url": "https://gis.vgsi.com/branfordct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Bridgeport, CT": {
+        "url": "https://gis.vgsi.com/bridgeportct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Bridgewater, CT": {
+        "url": "https://gis.vgsi.com/bridgewaterct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Bristol, CT": {
+        "url": "https://gis.vgsi.com/bristolct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Brookfield, CT": {
+        "url": "https://gis.vgsi.com/brookfieldct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Brooklyn, CT": {
+        "url": "https://gis.vgsi.com/brooklynct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Burlington, CT": {
+        "url": "https://gis.vgsi.com/burlingtonct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Canaan, CT": {
+        "url": "https://gis.vgsi.com/CanaanCT/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Canterbury, CT": {
+        "url": "https://gis.vgsi.com/canterburyct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Clinton, CT": {
+        "url": "https://gis.vgsi.com/clintonct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Cornwall, CT": {
+        "url": "https://gis.vgsi.com/CornwallCT/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Coventry, CT": {
+        "url": "https://gis.vgsi.com/coventryct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Deep River, CT": {
+        "url": "https://gis.vgsi.com/deepriverct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "East Granby, CT": {
+        "url": "https://gis.vgsi.com/EastGranbyCT/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "East Haddam, CT": {
+        "url": "https://gis.vgsi.com/easthaddamct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "East Hampton, CT": {
+        "url": "https://gis.vgsi.com/easthamptonctParcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "East Lyme, CT": {
+        "url": "https://gis.vgsi.com/eastlymect/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "East Windsor, CT": {
+        "url": "https://gis.vgsi.com/eastwindsorct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Enfield, CT": {
+        "url": "https://gis.vgsi.com/EnfieldCT/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Essex, CT": {
+        "url": "https://gis.vgsi.com/essexct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Fairfield, CT": {
+        "url": "https://gis.vgsi.com/fairfieldct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Glastonbury, CT": {
+        "url": "https://gis.vgsi.com/glastonburyctParcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Goshen, CT": {
+        "url": "https://gis.vgsi.com/GoshenCT/Default.aspxParcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Granby, CT": {
+        "url": "https://gis.vgsi.com/granbyct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Griswold, CT": {
+        "url": "https://gis.vgsi.com/griswoldct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Hamden, CT": {
+        "url": "https://gis.vgsi.com/hamdenct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Hampton, CT": {
+        "url": "https://gis.vgsi.com/hamptonct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Lebanon, CT": {
+        "url": "https://gis.vgsi.com/LebanonCT/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Lisbon, CT": {
+        "url": "https://gis.vgsi.com/LisbonCT/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Madison, CT": {
+        "url": "https://gis.vgsi.com/madisonct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Manchester, CT": {
+        "url": "https://gis.vgsi.com/manchesterct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Mansfield, CT": {
+        "url": "https://gis.vgsi.com/mansfieldctParcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Middlebury, CT": {
+        "url": "https://gis.vgsi.com/middleburyct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Middlefield, CT": {
+        "url": "https://gis.vgsi.com/MiddlefieldCT/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Middletown, CT": {
+        "url": "https://gis.vgsi.com/MiddletownCT/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Milford, CT": {
+        "url": "https://gis.vgsi.com/milfordct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Monroe, CT": {
+        "url": "https://gis.vgsi.com/monroect/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "New Britain, CT": {
+        "url": "https://gis.vgsi.com/newbritainct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "New Fairfield, CT": {
+        "url": "https://gis.vgsi.com/newfairfieldct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "New Hartford, CT": {
+        "url": "https://gis.vgsi.com/newhartfordctParcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "New Haven, CT": {
+        "url": "https://gis.vgsi.com/newhavenct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "New London, CT": {
+        "url": "https://gis.vgsi.com/newlondonct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "New Milford, CT": {
+        "url": "https://gis.vgsi.com/newmilfordct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Newtown, CT": {
+        "url": "https://gis.vgsi.com/newtownct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "North Branford, CT": {
+        "url": "https://gis.vgsi.com/northbranfordct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Norwalk, CT": {
+        "url": "https://gis.vgsi.com/NorwalkCT/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Norwich, CT": {
+        "url": "https://gis.vgsi.com/NorwichCT/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Old Lyme, CT": {
+        "url": "https://gis.vgsi.com/oldlymect/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Old Saybrook, CT": {
+        "url": "https://gis.vgsi.com/oldsaybrookct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Orange, CT": {
+        "url": "https://gis.vgsi.com/orangect/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Oxford, CT": {
+        "url": "https://gis.vgsi.com/oxfordct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Plainfield, CT": {
+        "url": "https://gis.vgsi.com/PlainfieldCT/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Pomfret, CT": {
+        "url": "https://gis.vgsi.com/pomfretct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Preston, CT": {
+        "url": "https://gis.vgsi.com/prestonct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Redding, CT": {
+        "url": "https://gis.vgsi.com/reddingct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Salem, CT": {
+        "url": "https://gis.vgsi.com/salemct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Salisbury, CT": {
+        "url": "https://gis.vgsi.com/salisburyctParcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Somers, CT": {
+        "url": "https://gis.vgsi.com/somersct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "South Windsor, CT": {
+        "url": "https://gis.vgsi.com/southwindsorct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Southbury, CT": {
+        "url": "https://gis.vgsi.com/southburyct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Southington, CT": {
+        "url": "https://gis.vgsi.com/southingtonct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Sprague, CT": {
+        "url": "https://gis.vgsi.com/spraguect/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Stafford, CT": {
+        "url": "https://gis.vgsi.com/staffordct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Stamford, CT": {
+        "url": "https://gis.vgsi.com/stamfordct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Sterling, CT": {
+        "url": "https://gis.vgsi.com/sterlingct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Stonington, CT": {
+        "url": "https://gis.vgsi.com/stoningtonctParcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Stratford, CT": {
+        "url": "https://gis.vgsi.com/stratfordctParcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Thompson, CT": {
+        "url": "https://gis.vgsi.com/thompsonct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Tolland, CT": {
+        "url": "https://gis.vgsi.com/tollandct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Trumbull, CT": {
+        "url": "https://gis.vgsi.com/trumbullct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Union, CT": {
+        "url": "https://gis.vgsi.com/UnionCT/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Voluntown, CT": {
+        "url": "https://gis.vgsi.com/voluntownct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Wallingford, CT": {
+        "url": "https://gis.vgsi.com/wallingfordct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Waterford, CT": {
+        "url": "https://gis.vgsi.com/waterfordct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Westbrook, CT": {
+        "url": "https://gis.vgsi.com/westbrookct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "West Hartford, CT": {
+        "url": "https://gis.vgsi.com/westhartfordct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Westport, CT": {
+        "url": "https://gis.vgsi.com/westportct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Willington, CT": {
+        "url": "https://gis.vgsi.com/WillingtonCT/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Wilton, CT": {
+        "url": "https://gis.vgsi.com/wiltonct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Winchester, CT": {
+        "url": "https://gis.vgsi.com/WinchesterCT/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Wolcott, CT": {
+        "url": "https://gis.vgsi.com/wolcottct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    },
+    "Woodstock, CT": {
+        "url": "https://gis.vgsi.com/woodstockct/Parcel.aspx?pid=",
+        "type": "vgsi",
+        "upper_limit": -1
+    }
+}
