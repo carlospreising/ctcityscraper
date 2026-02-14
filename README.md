@@ -19,7 +19,7 @@ This project uses [uv](https://github.com/astral-sh/uv) for fast dependency mana
 uv sync
 
 # Run the test script
-uv run python test_robustness.py
+./run_tests.sh
 ```
 
 ## Data Structure
