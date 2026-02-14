@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 import urllib3
 import requests
 import uuid
+import hashlib
 from typing import List, Dict
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -111,7 +112,10 @@ class Base:
         return tag_dict
 
     def __post_init__(self):
-        self.uuid = str(uuid.uuid4())
+        
+        uuid_str = f"{self.pid}{self.data}"
+        hex_string = hashlib.md5(uuid_str.encode("UTF-8")).hexdigest()
+        self.uuid = str(uuid.UUID(hex=hex_string))
         self.updated_at = datetime.now()
 
         if self.tag_mapping:
@@ -384,6 +388,7 @@ class Property(Base):
     
     def load_all(self):
 
+        self.load_buildings()
         self.load_assesment()
         self.load_appraisal()
         self.load_ownership()

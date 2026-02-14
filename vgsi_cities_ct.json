@@ -1,0 +1,542 @@
+{
+    "andover": {
+        "city": "Andover, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/andoverct/",
+        "type": "vgsi"
+    },
+    "bethlehem": {
+        "city": "Bethlehem, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/bethlehemct/",
+        "type": "vgsi"
+    },
+    "bolton": {
+        "city": "Bolton, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/BoltonCT/",
+        "type": "vgsi"
+    },
+    "branford": {
+        "city": "Branford, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/branfordct/",
+        "type": "vgsi"
+    },
+    "bridgeport": {
+        "city": "Bridgeport, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/bridgeportct/",
+        "type": "vgsi"
+    },
+    "bridgewater": {
+        "city": "Bridgewater, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/bridgewaterct/",
+        "type": "vgsi"
+    },
+    "bristol": {
+        "city": "Bristol, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/bristolct/",
+        "type": "vgsi"
+    },
+    "brookfield": {
+        "city": "Brookfield, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/brookfieldct/",
+        "type": "vgsi"
+    },
+    "brooklyn": {
+        "city": "Brooklyn, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/brooklynct/",
+        "type": "vgsi"
+    },
+    "burlington": {
+        "city": "Burlington, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/burlingtonct/",
+        "type": "vgsi"
+    },
+    "canaan": {
+        "city": "Canaan, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/CanaanCT/",
+        "type": "vgsi"
+    },
+    "canterbury": {
+        "city": "Canterbury, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/canterburyct/",
+        "type": "vgsi"
+    },
+    "canton": {
+        "city": "Canton, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/cantonct/",
+        "type": "vgsi"
+    },
+    "chaplin": {
+        "city": "Chaplin, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/chaplinct/",
+        "type": "vgsi"
+    },
+    "clinton": {
+        "city": "Clinton, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/clintonct/",
+        "type": "vgsi"
+    },
+    "colebrook": {
+        "city": "Colebrook, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/ColebrookCT/",
+        "type": "vgsi"
+    },
+    "cornwall": {
+        "city": "Cornwall, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/CornwallCT/",
+        "type": "vgsi"
+    },
+    "coventry": {
+        "city": "Coventry, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/coventryct/",
+        "type": "vgsi"
+    },
+    "deepriver": {
+        "city": "Deep River, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/deepriverct/",
+        "type": "vgsi"
+    },
+    "eastgranby": {
+        "city": "East Granby, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/EastGranbyCT/",
+        "type": "vgsi"
+    },
+    "easthaddam": {
+        "city": "East Haddam, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/easthaddamct/",
+        "type": "vgsi"
+    },
+    "easthampton": {
+        "city": "East Hampton, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/easthamptonct",
+        "type": "vgsi"
+    },
+    "eastlyme": {
+        "city": "East Lyme, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/eastlymect/",
+        "type": "vgsi"
+    },
+    "eastwindsor": {
+        "city": "East Windsor, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/eastwindsorct/",
+        "type": "vgsi"
+    },
+    "enfield": {
+        "city": "Enfield, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/EnfieldCT/",
+        "type": "vgsi"
+    },
+    "essex": {
+        "city": "Essex, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/essexct/",
+        "type": "vgsi"
+    },
+    "fairfield": {
+        "city": "Fairfield, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/fairfieldct/",
+        "type": "vgsi"
+    },
+    "glastonbury": {
+        "city": "Glastonbury, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/glastonburyct",
+        "type": "vgsi"
+    },
+    "granby": {
+        "city": "Granby, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/granbyct/",
+        "type": "vgsi"
+    },
+    "griswold": {
+        "city": "Griswold, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/griswoldct/",
+        "type": "vgsi"
+    },
+    "hamden": {
+        "city": "Hamden, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/hamdenct/",
+        "type": "vgsi"
+    },
+    "hampton": {
+        "city": "Hampton, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/hamptonct/",
+        "type": "vgsi"
+    },
+    "harwinton": {
+        "city": "Harwinton, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/harwintonct/",
+        "type": "vgsi"
+    },
+    "lebanon": {
+        "city": "Lebanon, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/LebanonCT/",
+        "type": "vgsi"
+    },
+    "kent": {
+        "city": "Kent, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/kentCT/",
+        "type": "vgsi"
+    },
+    "lisbon": {
+        "city": "Lisbon, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/LisbonCT/",
+        "type": "vgsi"
+    },
+    "lyme": {
+        "city": "Lyme, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/LymeCT/",
+        "type": "vgsi"
+    },
+    "madison": {
+        "city": "Madison, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/madisonct/",
+        "type": "vgsi"
+    },
+    "manchester": {
+        "city": "Manchester, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/manchesterct/",
+        "type": "vgsi"
+    },
+    "mansfield": {
+        "city": "Mansfield, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/mansfieldct",
+        "type": "vgsi"
+    },
+    "middlebury": {
+        "city": "Middlebury, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/middleburyct/",
+        "type": "vgsi"
+    },
+    "middlefield": {
+        "city": "Middlefield, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/MiddlefieldCT/",
+        "type": "vgsi"
+    },
+    "middletown": {
+        "city": "Middletown, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/MiddletownCT/",
+        "type": "vgsi"
+    },
+    "milford": {
+        "city": "Milford, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/milfordct/",
+        "type": "vgsi"
+    },
+    "monroe": {
+        "city": "Monroe, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/monroect/",
+        "type": "vgsi"
+    },
+    "newbritain": {
+        "city": "New Britain, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/newbritainct/",
+        "type": "vgsi"
+    },
+    "newfairfield": {
+        "city": "New Fairfield, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/newfairfieldct/",
+        "type": "vgsi"
+    },
+    "newhartford": {
+        "city": "New Hartford, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/newhartfordct",
+        "type": "vgsi"
+    },
+    "newhaven": {
+        "city": "New Haven, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/newhavenct/",
+        "type": "vgsi"
+    },
+    "newlondon": {
+        "city": "New London, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/newlondonct/",
+        "type": "vgsi"
+    },
+    "newmilford": {
+        "city": "New Milford, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/newmilfordct/",
+        "type": "vgsi"
+    },
+    "newtown": {
+        "city": "Newtown, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/newtownct/",
+        "type": "vgsi"
+    },
+    "northbranford": {
+        "city": "North Branford, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/northbranfordct/",
+        "type": "vgsi"
+    },
+    "norwalk": {
+        "city": "Norwalk, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/NorwalkCT/",
+        "type": "vgsi"
+    },
+    "norwich": {
+        "city": "Norwich, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/NorwichCT/",
+        "type": "vgsi"
+    },
+    "oldlyme": {
+        "city": "Old Lyme, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/oldlymect/",
+        "type": "vgsi"
+    },
+    "oldsaybrook": {
+        "city": "Old Saybrook, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/oldsaybrookct/",
+        "type": "vgsi"
+    },
+    "orange": {
+        "city": "Orange, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/orangect/",
+        "type": "vgsi"
+    },
+    "plainfield": {
+        "city": "Plainfield, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/PlainfieldCT/",
+        "type": "vgsi"
+    },
+    "pomfret": {
+        "city": "Pomfret, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/pomfretct/",
+        "type": "vgsi"
+    },
+    "preston": {
+        "city": "Preston, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/prestonct/",
+        "type": "vgsi"
+    },
+    "redding": {
+        "city": "Redding, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/reddingct/",
+        "type": "vgsi"
+    },
+    "salem": {
+        "city": "Salem, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/salemct/",
+        "type": "vgsi"
+    },
+    "salisbury": {
+        "city": "Salisbury, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/salisburyct",
+        "type": "vgsi"
+    },
+    "sharon": {
+        "city": "Sharon, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/sharonct",
+        "type": "vgsi"
+    },
+    "somers": {
+        "city": "Somers, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/somersct/",
+        "type": "vgsi"
+    },
+    "southwindsor": {
+        "city": "South Windsor, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/southwindsorct/",
+        "type": "vgsi"
+    },
+    "southbury": {
+        "city": "Southbury, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/southburyct/",
+        "type": "vgsi"
+    },
+    "southington": {
+        "city": "Southington, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/southingtonct/",
+        "type": "vgsi"
+    },
+    "sprague": {
+        "city": "Sprague, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/spraguect/",
+        "type": "vgsi"
+    },
+    "stafford": {
+        "city": "Stafford, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/staffordct/",
+        "type": "vgsi"
+    },
+    "stamford": {
+        "city": "Stamford, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/stamfordct/",
+        "type": "vgsi"
+    },
+    "sterling": {
+        "city": "Sterling, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/sterlingct/",
+        "type": "vgsi"
+    },
+    "stonington": {
+        "city": "Stonington, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/stoningtonct",
+        "type": "vgsi"
+    },
+    "stratford": {
+        "city": "Stratford, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/stratfordct",
+        "type": "vgsi"
+    },
+    "thompson": {
+        "city": "Thompson, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/thompsonct/",
+        "type": "vgsi"
+    },
+    "tolland": {
+        "city": "Tolland, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/tollandct/",
+        "type": "vgsi"
+    },
+    "trumbull": {
+        "city": "Trumbull, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/trumbullct/",
+        "type": "vgsi"
+    },
+    "union": {
+        "city": "Union, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/UnionCT/",
+        "type": "vgsi"
+    },
+    "wallingford": {
+        "city": "Wallingford, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/wallingfordct/",
+        "type": "vgsi"
+    },
+    "waterford": {
+        "city": "Waterford, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/waterfordct/",
+        "type": "vgsi"
+    },
+    "westbrook": {
+        "city": "Westbrook, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/westbrookct/",
+        "type": "vgsi"
+    },
+    "westhartford": {
+        "city": "West Hartford, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/westhartfordct/",
+        "type": "vgsi"
+    },
+    "westhaven": {
+        "city": "West Haven, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/westhavenct/",
+        "type": "vgsi"
+    },
+    "westport": {
+        "city": "Westport, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/westportct/",
+        "type": "vgsi"
+    },
+    "willington": {
+        "city": "Willington, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/WillingtonCT/",
+        "type": "vgsi"
+    },
+    "winchester": {
+        "city": "Winchester, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/WinchesterCT/",
+        "type": "vgsi"
+    },
+    "windham": {
+        "city": "Windham, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/windhamCT/",
+        "type": "vgsi"
+    },
+    "wolcott": {
+        "city": "Wolcott, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/wolcottct/",
+        "type": "vgsi"
+    },
+    "woodstock": {
+        "city": "Woodstock, CT",
+        "state": "ct",
+        "url": "https://gis.vgsi.com/woodstockct/",
+        "type": "vgsi"
+    }
+}
