@@ -127,3 +127,23 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# uv
+.python-version
+
+# Poetry (legacy - migrated to uv)
+poetry.lock
+.poetry/
+
+# Project-specific
+logs/
+*.csv
+*.json
+!vgsi_cities_ct.json
+.DS_Store
+
+# DuckDB databases
+*.duckdb
+*.duckdb.wal
+exports/
+photos/
