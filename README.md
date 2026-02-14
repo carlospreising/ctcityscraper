@@ -4,11 +4,7 @@ A web scraper for extracting property data from Connecticut cities and towns via
 
 ## Features
 
-- **Scrapes 169 CT cities/towns** - Property records, ownership, valuations, building details
-- **Production-ready robustness** - Retry logic, rate limiting, comprehensive logging
-- **Error tracking** - Parse errors and missing fields tracked per property
-- **Data validation** - Built-in validators for prices, years, areas, and consistency
-- **Network resilience** - 3 retries with exponential backoff, 30s timeouts
+- **Scrapes VGSI CT cities/towns** - Property records, ownership, valuations, building details
 
 ## Quick Start
 
