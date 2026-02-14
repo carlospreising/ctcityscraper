@@ -5,6 +5,8 @@ A web scraper for extracting property data from Connecticut cities and towns via
 ## Features
 
 - **Scrapes VGSI CT cities/towns** - Property records, ownership, valuations, building details
+- **Uses duckdb, with a schema per city or town.**
+- **Keeps it a bit simpler than before, but can scrape in parallel**
 
 ## Quick Start
 
