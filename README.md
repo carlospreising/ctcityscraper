@@ -22,32 +22,6 @@ uv sync
 uv run python test_robustness.py
 ```
 
-### Basic Usage
-
-```python
-from src.vgsi.logging_config import setup_logging
-from src.vgsi.vgsi_utils import load_city
-
-# Setup logging
-logger = setup_logging(log_level="INFO")
-
-# Scrape properties with rate limiting
-properties, buildings, assessments, appraisals, ownership = load_city(
-    city='newhaven',
-    pid_min=1,
-    pid_max=100,
-    delay_seconds=2  # 2 second delay between requests (recommended)
-)
-
-# Check results
-print(f"Scraped {len(properties)} properties")
-
-# Check for errors
-for prop in properties:
-    if prop.get('parse_errors'):
-        print(f"PID {prop['pid']}: {prop['parse_errors']}")
-```
-
 ## Data Structure
 
 ### Property Data
@@ -58,26 +32,6 @@ for prop in properties:
 - **Land**: Acreage, frontage, depth, use code, zone, neighborhood
 - **Building**: Count, use type, building records
 - **Historical**: Ownership records, assessment/appraisal history
-
-### Output Format
-
-Data is returned as lists of dictionaries, one per property/building/assessment/etc.
-
-```python
-property = {
-    'uuid': '...',
-    'pid': 82,
-    'address': '51 SOUTH END RD',
-    'owner': 'CITY OF NEW HAVEN AIRPORT',
-    'assessment_value': 1235010.0,
-    'appraisal_value': 1764300.0,
-    'land_size_acres': 3.8,
-    'building_count': 1,
-    'parse_errors': None,  # or "building_2,appraisals"
-    'missing_fields': None,  # or "land_size_acres,zip_code"
-    ...
-}
-```
 
 ### Retry Logic
 
@@ -111,7 +65,7 @@ ctcityscraper/
 
 ## Available Cities
 
-The scraper supports all 169 Connecticut cities and towns with VGSI databases. Common examples:
+The scraper supports Connecticut cities and towns with VGSI databases. Common examples:
 
 - New Haven (`newhaven`)
 - Hartford (`hartford`)
