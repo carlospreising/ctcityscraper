@@ -13,7 +13,7 @@ This project uses [uv](https://github.com/astral-sh/uv) for fast dependency mana
 uv sync
 
 # Run the test script
-uv sync --all-extras
+uv sync --extra dev
 ./run_tests.sh
 ```
 
@@ -57,22 +57,6 @@ Logs are written to:
 - **Console**: INFO level and above
 - **File**: `logs/vgsi_scraper_YYYYMMDD_HHMMSS.log` (DEBUG level)
 
-## Project Structure
-
-```
-ctcityscraper/
-├── src/
-│   └── vgsi/
-│       ├── vgsi_objects.py      # Core data models (Property, Building, etc.)
-│       ├── vgsi_utils.py        # Scraping utilities (load_city, etc.)
-│       ├── logging_config.py    # Logging configuration
-│       └── validators.py        # Data validation functions
-├── logs/                        # Auto-generated log files
-├── test_robustness.py           # Test script
-├── pyproject.toml               # Project dependencies (uv/pip)
-├── uv.lock                      # Locked dependency versions
-└── vgsi_cities_ct.json          # City registry (169 CT cities)
-```
 
 ## Available Cities
 

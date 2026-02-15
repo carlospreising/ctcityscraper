@@ -178,7 +178,7 @@ class TestDuckDBWriter:
         assert len(all_rows) == 2
         assert all_rows[0][0] == 200000.0  # version 1
         assert all_rows[1][0] == 250000.0  # version 2
-        assert all_rows[1][2] == True  # version 2 is current
+        assert all_rows[1][2] is True  # version 2 is current
 
         # Current view should show only the latest version
         current_rows = db_writer.conn.execute(
