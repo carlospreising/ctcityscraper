@@ -16,6 +16,22 @@ uv sync
 ./run_tests.sh
 ```
 
+### Quick Grab
+
+```bash
+#populate cities table first, contains CT towns/cities on VGSI and their respective URL's
+uv run scripts/scrape_city.py --fetch-cities
+
+#grab a sample
+uv run scripts/scrape_city.py bridgeport --pid-min 1 --pid-max 1000 --workers 4
+
+#pid is the property id, and it's good to estimate what the max pid might be for a city or town.
+#TODO: Add max pid syncing or validation
+
+#grab a full dataset, new haven has as of last count 26161 valid pid's, so setting a max-pid like 27000 makes sense. Filling out all of these isn't necessary, but it's an example.
+uv run scripts/scrape_city.py newhaven --pid-min 1 --pid-max 27000 --workers 10 --checkpoint-every 200 --db ct.db --download-photos --photo-dir photos --batch-size 20
+```
+
 ## Data Structure
 
 ### Property Data
