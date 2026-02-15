@@ -13,6 +13,7 @@ This project uses [uv](https://github.com/astral-sh/uv) for fast dependency mana
 uv sync
 
 # Run the test script
+uv sync --all-extras
 ./run_tests.sh
 ```
 
