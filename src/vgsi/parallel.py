@@ -162,6 +162,10 @@ def load_city_parallel(
                 result = scrape_property(base_url, pid)
                 scrape_time = time.time() - start
 
+                # Set VGSI property URL
+                if result:
+                    result["property"]["vgsi_url"] = f"{base_url}Parcel.aspx?pid={pid}"
+
                 # Optionally download photos
                 if download_photos and result:
                     for b in result.get("buildings", []):

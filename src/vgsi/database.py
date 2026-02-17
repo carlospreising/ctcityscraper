@@ -60,6 +60,7 @@ class DuckDBWriter:
             c.execute(f"""
                 CREATE TABLE IF NOT EXISTS {city}.properties (
                     id INTEGER PRIMARY KEY DEFAULT nextval('{city}.properties_seq'),
+                    city_id INTEGER NOT NULL,
                     uuid VARCHAR NOT NULL,
                     pid INTEGER NOT NULL,
                     account_number VARCHAR,
@@ -92,6 +93,8 @@ class DuckDBWriter:
                     land_assessed_value DECIMAL(12,2),
                     land_appraised_value DECIMAL(12,2),
                     zip_code VARCHAR,
+                    vgsi_url VARCHAR,
+                    photo_paths VARCHAR,
 
                     -- SCD Type 2 fields
                     version INTEGER NOT NULL DEFAULT 1,
@@ -111,6 +114,7 @@ class DuckDBWriter:
             c.execute(f"""
                 CREATE TABLE IF NOT EXISTS {city}.buildings (
                     id INTEGER PRIMARY KEY DEFAULT nextval('{city}.buildings_seq'),
+                    city_id INTEGER NOT NULL,
                     property_uuid VARCHAR NOT NULL,
                     pid INTEGER NOT NULL,
                     bid INTEGER,
@@ -167,6 +171,7 @@ class DuckDBWriter:
             c.execute(f"""
                 CREATE TABLE IF NOT EXISTS {city}.sub_areas (
                     id INTEGER PRIMARY KEY DEFAULT nextval('{city}.sub_areas_seq'),
+                    city_id INTEGER NOT NULL,
                     property_uuid VARCHAR NOT NULL,
                     pid INTEGER NOT NULL,
                     bid INTEGER,
@@ -189,6 +194,7 @@ class DuckDBWriter:
             c.execute(f"""
                 CREATE TABLE IF NOT EXISTS {city}.ownership (
                     id INTEGER PRIMARY KEY DEFAULT nextval('{city}.ownership_seq'),
+                    city_id INTEGER NOT NULL,
                     property_uuid VARCHAR NOT NULL,
                     pid INTEGER NOT NULL,
                     owner VARCHAR,
@@ -205,6 +211,7 @@ class DuckDBWriter:
             c.execute(f"""
                 CREATE TABLE IF NOT EXISTS {city}.appraisals (
                     id INTEGER PRIMARY KEY DEFAULT nextval('{city}.appraisals_seq'),
+                    city_id INTEGER NOT NULL,
                     property_uuid VARCHAR NOT NULL,
                     pid INTEGER NOT NULL,
                     valuation_year VARCHAR,
@@ -219,6 +226,7 @@ class DuckDBWriter:
             c.execute(f"""
                 CREATE TABLE IF NOT EXISTS {city}.assessments (
                     id INTEGER PRIMARY KEY DEFAULT nextval('{city}.assessments_seq'),
+                    city_id INTEGER NOT NULL,
                     property_uuid VARCHAR NOT NULL,
                     pid INTEGER NOT NULL,
                     valuation_year VARCHAR,
@@ -233,6 +241,7 @@ class DuckDBWriter:
             c.execute(f"""
                 CREATE TABLE IF NOT EXISTS {city}.extra_features (
                     id INTEGER PRIMARY KEY DEFAULT nextval('{city}.extra_features_seq'),
+                    city_id INTEGER NOT NULL,
                     property_uuid VARCHAR NOT NULL,
                     pid INTEGER NOT NULL,
                     code VARCHAR,
@@ -257,6 +266,7 @@ class DuckDBWriter:
             c.execute(f"""
                 CREATE TABLE IF NOT EXISTS {city}.outbuildings (
                     id INTEGER PRIMARY KEY DEFAULT nextval('{city}.outbuildings_seq'),
+                    city_id INTEGER NOT NULL,
                     property_uuid VARCHAR NOT NULL,
                     pid INTEGER NOT NULL,
                     code VARCHAR,
@@ -280,9 +290,11 @@ class DuckDBWriter:
             """)
 
             # Cities table (global)
+            c.execute("CREATE SEQUENCE IF NOT EXISTS main.cities_seq")
             c.execute("""
                 CREATE TABLE IF NOT EXISTS main.cities (
-                    city_key VARCHAR PRIMARY KEY,
+                    city_id INTEGER PRIMARY KEY DEFAULT nextval('main.cities_seq'),
+                    city_key VARCHAR UNIQUE NOT NULL,
                     city_name VARCHAR NOT NULL,
                     state VARCHAR NOT NULL,
                     url VARCHAR NOT NULL,
@@ -352,7 +364,23 @@ class DuckDBWriter:
             # Create current state views
             self._create_current_views()
 
-            logger.info(f"Schema created for city: {city}")
+            # Look up or auto-insert city to cache city_id
+            result = c.execute(
+                "SELECT city_id FROM main.cities WHERE city_key = ?", [city]
+            ).fetchone()
+            if result:
+                self.city_id = result[0]
+            else:
+                c.execute(
+                    "INSERT INTO main.cities (city_key, city_name, state, url, type) "
+                    "VALUES (?, ?, ?, ?, ?)",
+                    [city, city, "", "", ""],
+                )
+                self.city_id = c.execute(
+                    "SELECT city_id FROM main.cities WHERE city_key = ?", [city]
+                ).fetchone()[0]
+
+            logger.info(f"Schema created for city: {city} (city_id={self.city_id})")
 
     def _create_current_views(self):
         """Create views for current (is_current=TRUE) records."""
@@ -390,6 +418,9 @@ class DuckDBWriter:
                 "updated_at",
                 "created_at",
                 "id",
+                "city_id",
+                "vgsi_url",
+                "photo_paths",
             ]
         )
 
@@ -444,19 +475,33 @@ class DuckDBWriter:
                     if prop is None:
                         continue
 
+                    prop["city_id"] = self.city_id
                     prop["updated_at"] = now
+
+                    # Collect photo paths from buildings
+                    photo_paths = []
+                    for building in result.get("buildings", []):
+                        path = building.get("photo_local_path")
+                        if path:
+                            photo_paths.append(path)
+                    if photo_paths:
+                        prop["photo_paths"] = ",".join(photo_paths)
+
                     self._upsert_property(prop)
 
                     for building in result.get("buildings", []):
+                        building["city_id"] = self.city_id
                         building["updated_at"] = now
                         self._insert_building(building)
 
                     for o in result.get("ownership", []):
+                        o["city_id"] = self.city_id
                         o["updated_at"] = now
                         self._insert_row(
                             "ownership",
                             o,
                             [
+                                "city_id",
                                 "property_uuid",
                                 "pid",
                                 "owner",
@@ -470,11 +515,13 @@ class DuckDBWriter:
                         )
 
                     for a in result.get("appraisals", []):
+                        a["city_id"] = self.city_id
                         a["updated_at"] = now
                         self._insert_row(
                             "appraisals",
                             a,
                             [
+                                "city_id",
                                 "property_uuid",
                                 "pid",
                                 "valuation_year",
@@ -486,11 +533,13 @@ class DuckDBWriter:
                         )
 
                     for a in result.get("assessments", []):
+                        a["city_id"] = self.city_id
                         a["updated_at"] = now
                         self._insert_row(
                             "assessments",
                             a,
                             [
+                                "city_id",
                                 "property_uuid",
                                 "pid",
                                 "valuation_year",
@@ -502,9 +551,11 @@ class DuckDBWriter:
                         )
 
                     for xf in result.get("extra_features", []):
+                        xf["city_id"] = self.city_id
                         self._upsert_extra_feature(xf, now)
 
                     for ob in result.get("outbuildings", []):
+                        ob["city_id"] = self.city_id
                         self._upsert_outbuilding(ob, now)
 
                 self.conn.commit()
@@ -584,6 +635,7 @@ class DuckDBWriter:
 
         # Define columns for insert
         cols = [
+            "city_id",
             "uuid",
             "pid",
             "account_number",
@@ -616,6 +668,8 @@ class DuckDBWriter:
             "land_assessed_value",
             "land_appraised_value",
             "zip_code",
+            "vgsi_url",
+            "photo_paths",
             "version",
             "effective_from",
             "effective_to",
@@ -705,6 +759,7 @@ class DuckDBWriter:
                 )
                 # Still process sub-areas
                 for sa in sub_areas:
+                    sa["city_id"] = data.get("city_id")
                     sa["property_uuid"] = data["property_uuid"]
                     sa["pid"] = data["pid"]
                     sa["bid"] = data.get("bid")
@@ -730,6 +785,7 @@ class DuckDBWriter:
 
         # Insert building
         cols = [
+            "city_id",
             "property_uuid",
             "pid",
             "bid",
@@ -789,6 +845,7 @@ class DuckDBWriter:
 
         # Insert sub-areas with SCD Type 2
         for sa in sub_areas:
+            sa["city_id"] = data.get("city_id")
             sa["property_uuid"] = data["property_uuid"]
             sa["pid"] = data["pid"]
             sa["bid"] = data.get("bid")
@@ -828,6 +885,7 @@ class DuckDBWriter:
         data["is_current"] = True
 
         cols = [
+            "city_id",
             "property_uuid",
             "pid",
             "bid",
@@ -887,6 +945,7 @@ class DuckDBWriter:
         data["is_current"] = True
 
         cols = [
+            "city_id",
             "property_uuid",
             "pid",
             "code",
@@ -947,6 +1006,7 @@ class DuckDBWriter:
         data["is_current"] = True
 
         cols = [
+            "city_id",
             "property_uuid",
             "pid",
             "code",

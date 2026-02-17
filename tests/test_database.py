@@ -493,15 +493,16 @@ class TestDuckDBWriter:
 
         assert count == 2
 
-        # Verify cities were stored
+        # Verify cities were stored (testcity is auto-inserted by DuckDBWriter init)
         rows = db_writer.conn.execute(
             "SELECT city_key, city_name, url FROM main.cities ORDER BY city_key"
         ).fetchall()
 
-        assert len(rows) == 2
+        assert len(rows) == 3
         assert rows[0][0] == "hartford"
         assert rows[0][1] == "Hartford"
         assert rows[1][0] == "newhaven"
+        assert rows[2][0] == "testcity"
 
     def test_get_city_url(self, db_writer):
         """Test retrieving city URL."""
@@ -1142,3 +1143,282 @@ class TestSCDType2:
         assert rows[1][0] == 2
         assert rows[1][1] is True
         assert rows[1][2] == 1100.0
+
+
+class TestCityIdAndMetadata:
+    """Test city_id surrogate key, vgsi_url, and photo_paths."""
+
+    def test_city_auto_inserted_on_init(self, db_writer):
+        """DuckDBWriter auto-inserts city into main.cities and caches city_id."""
+        assert hasattr(db_writer, "city_id")
+        assert db_writer.city_id is not None
+
+        row = db_writer.conn.execute(
+            "SELECT city_id, city_key FROM main.cities WHERE city_key = 'testcity'"
+        ).fetchone()
+        assert row is not None
+        assert row[0] == db_writer.city_id
+        assert row[1] == "testcity"
+
+    def test_cities_table_has_surrogate_key(self, db_writer):
+        """main.cities uses city_id as primary key with city_key unique."""
+        # Insert another city via store_cities
+        db_writer.store_cities(
+            {
+                "newhaven": {
+                    "city_name": "New Haven",
+                    "state": "ct",
+                    "url": "https://gis.vgsi.com/newhavenct/",
+                    "type": "vgsi",
+                },
+            }
+        )
+
+        rows = db_writer.conn.execute(
+            "SELECT city_id, city_key FROM main.cities ORDER BY city_id"
+        ).fetchall()
+
+        # testcity (auto-inserted) + newhaven
+        assert len(rows) == 2
+        # city_ids should be distinct integers
+        assert rows[0][0] != rows[1][0]
+
+    def test_city_id_on_properties(self, db_writer):
+        """Properties carry city_id matching main.cities."""
+        db_writer.write_batch(
+            [
+                {
+                    "property": {
+                        "uuid": "test-cid-001",
+                        "pid": 2001,
+                        "town_name": "Test Town",
+                    }
+                }
+            ]
+        )
+
+        row = db_writer.conn.execute(
+            "SELECT city_id FROM testcity.properties WHERE pid = 2001"
+        ).fetchone()
+        assert row[0] == db_writer.city_id
+
+    def test_city_id_on_all_tables(self, db_writer):
+        """city_id is set on all per-city tables."""
+        db_writer.write_batch(
+            [
+                {
+                    "property": {
+                        "uuid": "test-cid-002",
+                        "pid": 2002,
+                        "town_name": "Test Town",
+                    },
+                    "buildings": [
+                        {
+                            "property_uuid": "test-cid-002",
+                            "pid": 2002,
+                            "bid": 0,
+                            "year_built": 2000,
+                            "construction": {},
+                            "sub_areas": [
+                                {
+                                    "code": "FLA",
+                                    "description": "First Floor",
+                                    "gross_area": 1000.0,
+                                    "living_area": 1000.0,
+                                }
+                            ],
+                        }
+                    ],
+                    "ownership": [
+                        {
+                            "property_uuid": "test-cid-002",
+                            "pid": 2002,
+                            "owner": "Test Owner",
+                            "sale_price": 100000.0,
+                        }
+                    ],
+                    "appraisals": [
+                        {
+                            "property_uuid": "test-cid-002",
+                            "pid": 2002,
+                            "valuation_year": "2024",
+                            "total": 200000.0,
+                        }
+                    ],
+                    "assessments": [
+                        {
+                            "property_uuid": "test-cid-002",
+                            "pid": 2002,
+                            "valuation_year": "2024",
+                            "total": 140000.0,
+                        }
+                    ],
+                    "extra_features": [
+                        {
+                            "property_uuid": "test-cid-002",
+                            "pid": 2002,
+                            "code": "POOL",
+                            "description": "Pool",
+                            "value": 25000.0,
+                        }
+                    ],
+                    "outbuildings": [
+                        {
+                            "property_uuid": "test-cid-002",
+                            "pid": 2002,
+                            "code": "GAR",
+                            "description": "Garage",
+                            "value": 15000.0,
+                        }
+                    ],
+                }
+            ]
+        )
+
+        cid = db_writer.city_id
+        for table in [
+            "properties",
+            "buildings",
+            "sub_areas",
+            "ownership",
+            "appraisals",
+            "assessments",
+            "extra_features",
+            "outbuildings",
+        ]:
+            row = db_writer.conn.execute(
+                f"SELECT city_id FROM testcity.{table} WHERE pid = 2002"
+            ).fetchone()
+            assert row is not None, f"No row in {table}"
+            assert row[0] == cid, f"city_id mismatch in {table}"
+
+    def test_join_to_cities_table(self, db_writer):
+        """Can join per-city tables to main.cities via city_id."""
+        db_writer.write_batch(
+            [
+                {
+                    "property": {
+                        "uuid": "test-cid-003",
+                        "pid": 2003,
+                        "town_name": "Test Town",
+                    }
+                }
+            ]
+        )
+
+        row = db_writer.conn.execute(
+            """
+            SELECT c.city_key, p.pid
+            FROM testcity.properties p
+            JOIN main.cities c ON p.city_id = c.city_id
+            WHERE p.pid = 2003
+            """
+        ).fetchone()
+
+        assert row is not None
+        assert row[0] == "testcity"
+        assert row[1] == 2003
+
+    def test_vgsi_url_stored(self, db_writer):
+        """vgsi_url is stored on properties."""
+        db_writer.write_batch(
+            [
+                {
+                    "property": {
+                        "uuid": "test-url-001",
+                        "pid": 3001,
+                        "town_name": "Test Town",
+                        "vgsi_url": "https://gis.vgsi.com/testct/Parcel.aspx?pid=3001",
+                    }
+                }
+            ]
+        )
+
+        row = db_writer.conn.execute(
+            "SELECT vgsi_url FROM testcity.properties WHERE pid = 3001"
+        ).fetchone()
+        assert row[0] == "https://gis.vgsi.com/testct/Parcel.aspx?pid=3001"
+
+    def test_photo_paths_aggregated(self, db_writer):
+        """photo_paths on properties aggregates building photo_local_path values."""
+        db_writer.write_batch(
+            [
+                {
+                    "property": {
+                        "uuid": "test-photo-001",
+                        "pid": 4001,
+                        "town_name": "Test Town",
+                    },
+                    "buildings": [
+                        {
+                            "property_uuid": "test-photo-001",
+                            "pid": 4001,
+                            "bid": 0,
+                            "year_built": 1990,
+                            "construction": {},
+                            "sub_areas": [],
+                            "photo_local_path": "photos/testcity/4001_0.jpg",
+                        },
+                        {
+                            "property_uuid": "test-photo-001",
+                            "pid": 4001,
+                            "bid": 1,
+                            "year_built": 2000,
+                            "construction": {},
+                            "sub_areas": [],
+                            "photo_local_path": "photos/testcity/4001_1.jpg",
+                        },
+                    ],
+                }
+            ]
+        )
+
+        row = db_writer.conn.execute(
+            "SELECT photo_paths FROM testcity.properties WHERE pid = 4001"
+        ).fetchone()
+        assert row[0] == "photos/testcity/4001_0.jpg,photos/testcity/4001_1.jpg"
+
+    def test_photo_paths_none_when_no_photos(self, db_writer):
+        """photo_paths is NULL when no buildings have photos."""
+        db_writer.write_batch(
+            [
+                {
+                    "property": {
+                        "uuid": "test-photo-002",
+                        "pid": 4002,
+                        "town_name": "Test Town",
+                    },
+                    "buildings": [
+                        {
+                            "property_uuid": "test-photo-002",
+                            "pid": 4002,
+                            "bid": 0,
+                            "year_built": 1990,
+                            "construction": {},
+                            "sub_areas": [],
+                        },
+                    ],
+                }
+            ]
+        )
+
+        row = db_writer.conn.execute(
+            "SELECT photo_paths FROM testcity.properties WHERE pid = 4002"
+        ).fetchone()
+        assert row[0] is None
+
+    def test_city_id_excluded_from_row_hash(self, db_writer):
+        """city_id doesn't affect SCD Type 2 change detection."""
+        prop = {
+            "uuid": "test-hash-001",
+            "pid": 5001,
+            "town_name": "Test Town",
+            "assessment_value": 100000.0,
+        }
+
+        # Compute hash with and without city_id — should be the same
+        hash1 = db_writer._compute_row_hash(prop)
+        prop_with_cid = prop.copy()
+        prop_with_cid["city_id"] = 999
+        hash2 = db_writer._compute_row_hash(prop_with_cid)
+        assert hash1 == hash2

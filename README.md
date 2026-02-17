@@ -44,6 +44,9 @@ uv run scripts/scrape_city.py newhaven --pid-min 1 --pid-max 27000 --workers 10 
 - **Building**: Count, use type, building records
 - **Historical**: Ownership records, assessment/appraisal history
 
+You can view the whole [data structure here.|https://dbdiagram.io/d/6994cf67bd82f5fce2fb9599]
+The properties and buildings tables have "current" versions as views. The tables are SCD2 Tables, to track history of any changes from the pervious scrape of the data. For example, querying a specific property by pid that has had changes will result in multiple rows from the properties table, but just the latest from the current table.
+
 ### Retry Logic
 
 Default configuration:
