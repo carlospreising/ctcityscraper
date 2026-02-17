@@ -52,7 +52,8 @@ When you run the scraper, a schema is created for every city. For example, there
 - **Building**: Count, use type, building records
 - **Historical**: Ownership records, assessment/appraisal history
 
-You can view the whole data structure here: [ERD](https://dbdiagram.io/d/6994cf67bd82f5fce2fb9599)
+You can view the whole data structure here: [ERD](https://dbdiagram.io/d/6994cf67bd82f5fce2fb9599).
+
 Compare it to a property page like [this one](https://gis.vgsi.com/newhavenct/Parcel.aspx?pid=459).
 
 The properties and buildings tables have "current" versions as views. The tables are SCD2 Tables, to track history of any changes from the pervious scrape of the data. For example, querying a specific property by pid that has had changes will result in multiple rows from the properties table, but just the latest from the current table.
