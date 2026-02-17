@@ -17,6 +17,21 @@ uv sync --extra dev
 ./run_tests.sh
 ```
 
+```bash
+# Scrape 1,000 properties with 10 workers
+uv run python scripts/scrape_city.py \
+    --city newhaven \
+    --pid-min 1 \
+    --pid-max 1000 \
+    --workers 10 \
+    --rate 5
+
+# Export to CSV
+uv run python scripts/scrape_city.py --export --output exports/
+```
+
+
+
 ### Quick Grab
 
 ```bash
@@ -95,27 +110,6 @@ The scraper supports all 80~ Connecticut cities and towns with VGSI databases. C
 - Greenwich (`greenwich`)
 
 Full list available in `vgsi_cities_ct.json`.
-
-## Parallel Scraping
-
-### Overview
-
-The parallel scraper uses ThreadPoolExecutor for concurrent scraping and stores data in DuckDB for better performance and queryability.
-
-### Quick Start
-
-```bash
-# Scrape 1,000 properties with 10 workers
-uv run python scripts/scrape_city.py \
-    --city newhaven \
-    --pid-min 1 \
-    --pid-max 1000 \
-    --workers 10 \
-    --rate 5
-
-# Export to CSV
-uv run python scripts/scrape_city.py --export --output exports/
-```
 
 ### Command-Line Options
 
