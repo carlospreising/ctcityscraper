@@ -4,15 +4,16 @@ Tests for VGSI scraper functions.
 Tests HTML parsing, data extraction, type coercion, and error handling.
 """
 
-import pytest
+import json
+
 from bs4 import BeautifulSoup
 
-from src.vgsi.scraper import (
-    InvalidPIDException,
+from scrapers.vgsi.source import (
     _clean_string,
     _handle_float,
     _handle_int,
     _handle_money,
+    flatten_vgsi,
     generate_uuid,
     parse_buildings,
     parse_property,
@@ -97,6 +98,17 @@ class TestUUIDGeneration:
         uuid = generate_uuid(123, "test")
         assert len(uuid) == 36  # Standard UUID format with hyphens
         assert uuid.count("-") == 4
+
+    def test_generate_uuid_dict_order_independent(self):
+        """Test that UUID is stable regardless of dict insertion order."""
+        data1 = {"address": "100 Main St", "owner": "John", "town": "Hartford"}
+        data2 = {"town": "Hartford", "address": "100 Main St", "owner": "John"}
+        assert generate_uuid(123, data1) == generate_uuid(123, data2)
+
+    def test_generate_uuid_dict_deterministic(self):
+        """Test that UUID from dict is deterministic across calls."""
+        data = {"pid": "123", "address": "100 Main St", "owner": "John"}
+        assert generate_uuid(123, data) == generate_uuid(123, data)
 
 
 class TestParseProperty:
@@ -523,3 +535,118 @@ class TestEdgeCases:
         result = parse_property(soup, 123)
 
         assert result["land_size_acres"] == 5.25
+
+
+class TestExtraFields:
+    """Test extra_fields capture for unknown spans and construction keys."""
+
+    def test_parse_property_captures_unknown_spans(self):
+        """Unknown MainContent_lbl* spans are captured in extra_fields."""
+        html = """
+        <html>
+            <span id="MainContent_lblPid">123</span>
+            <span id="MainContent_lblAcctNum">ACC123</span>
+            <span id="lblTownName">Test Town</span>
+            <span id="MainContent_lblNewField">surprise value</span>
+            <span id="MainContent_lblAnotherNew">another</span>
+        </html>
+        """
+        soup = BeautifulSoup(html, "html.parser")
+        result = parse_property(soup, 123)
+
+        assert result["extra_fields"] is not None
+        extra = json.loads(result["extra_fields"])
+        assert extra["MainContent_lblNewField"] == "surprise value"
+        assert extra["MainContent_lblAnotherNew"] == "another"
+
+    def test_parse_property_no_extra_fields_when_all_known(self):
+        """extra_fields is None when no unknown spans are present."""
+        html = """
+        <html>
+            <span id="MainContent_lblPid">123</span>
+            <span id="MainContent_lblAcctNum">ACC123</span>
+            <span id="lblTownName">Test Town</span>
+        </html>
+        """
+        soup = BeautifulSoup(html, "html.parser")
+        result = parse_property(soup, 123)
+
+        assert result["extra_fields"] is None
+
+    def test_parse_property_ignores_empty_unknown_spans(self):
+        """Empty unknown spans are not included in extra_fields."""
+        html = """
+        <html>
+            <span id="MainContent_lblPid">123</span>
+            <span id="MainContent_lblAcctNum">ACC123</span>
+            <span id="lblTownName">Test Town</span>
+            <span id="MainContent_lblEmptyNew"></span>
+            <span id="MainContent_lblRealNew">has value</span>
+        </html>
+        """
+        soup = BeautifulSoup(html, "html.parser")
+        result = parse_property(soup, 123)
+
+        extra = json.loads(result["extra_fields"])
+        assert "MainContent_lblEmptyNew" not in extra
+        assert extra["MainContent_lblRealNew"] == "has value"
+
+    def test_flatten_building_captures_unknown_construction_keys(self):
+        """Unknown construction detail keys go into building extra_fields."""
+        results = [
+            {
+                "property": {
+                    "uuid": "test-ef",
+                    "pid": 1,
+                    "town_name": "Test",
+                },
+                "buildings": [
+                    {
+                        "property_uuid": "test-ef",
+                        "pid": 1,
+                        "bid": 0,
+                        "year_built": 1950,
+                        "construction": {
+                            "style": "Colonial",
+                            "brand_new_field": "unknown_value",
+                            "another_new": "42",
+                        },
+                        "sub_areas": [],
+                    }
+                ],
+            }
+        ]
+        tables = flatten_vgsi(results)
+        building = tables["buildings"][0]
+
+        assert building["style"] == "Colonial"
+        assert "extra_fields" in building
+        extra = json.loads(building["extra_fields"])
+        assert extra["brand_new_field"] == "unknown_value"
+        assert extra["another_new"] == "42"
+
+    def test_flatten_building_no_extra_when_all_known(self):
+        """No extra_fields when all construction keys are in CNS_MAPPING."""
+        results = [
+            {
+                "property": {
+                    "uuid": "test-no-ef",
+                    "pid": 2,
+                    "town_name": "Test",
+                },
+                "buildings": [
+                    {
+                        "property_uuid": "test-no-ef",
+                        "pid": 2,
+                        "bid": 0,
+                        "year_built": 1960,
+                        "construction": {"style": "Ranch"},
+                        "sub_areas": [],
+                    }
+                ],
+            }
+        ]
+        tables = flatten_vgsi(results)
+        building = tables["buildings"][0]
+
+        assert building.get("extra_fields") is None

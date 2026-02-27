@@ -1,182 +1,160 @@
 # CT City Scraper
 
-A web scraper for extracting property data from Connecticut cities and towns via the VGSI online database.
+A multi-source scraper engine for extracting public data from Connecticut. Currently supports:
+
+- **VGSI** — property assessment data from ~80 CT cities/towns
+- **CT Data** — business registry datasets from data.ct.gov
 
 ## Quick Start
 
 ### Installation
 
-This project uses [uv](https://github.com/astral-sh/uv) for fast dependency management.
+This project uses [uv](https://github.com/astral-sh/uv) for dependency management.
 
 ```bash
-# Install dependencies
 uv sync
-
-# Run the test script
-uv sync --extra dev
-./run_tests.sh
+uv sync --extra dev   # for tests
 ```
 
-### Quick Grab
+### Scraping VGSI Property Data
 
 ```bash
-#populate cities table first, contains CT towns/cities on VGSI and their respective URL's
-uv run scripts/scrape_city.py --fetch-cities
+# Populate the cities lookup table (one-time setup)
+uv run scrape admin vgsi --fetch-cities
 
-#grab a sample
-uv run scripts/scrape_city.py bridgeport --pid-min 1 --pid-max 1000 --workers 4
+# Scrape a range of properties
+uv run scrape load vgsi newhaven --entry-id-max 27000 --workers 10
 
-#pid is the property id, and it's good to estimate what the max pid might be for a city or town.
-#TODO: Add max pid syncing or validation
+# Resume after interruption (checkpoints are automatic)
+uv run scrape load vgsi newhaven --entry-id-max 27000
 
-#grab a full dataset, new haven has as of last count 26161 valid pid's, so setting a max-pid like 27000 makes sense. Filling out all of these isn't necessary, but it's an example.
-uv run scripts/scrape_city.py newhaven --pid-min 1 --pid-max 27000 --workers 10 --checkpoint-every 200 --db ct.db --download-photos --photo-dir photos --batch-size 20
+# Re-scrape known properties to detect changes
+uv run scrape refresh vgsi newhaven
+
+# Download building photos
+uv run scrape load vgsi newhaven --entry-id-max 27000 --download-photos
 ```
 
-## Data Structure
-
-### Property Data
-- **Identifiers**: PID, account number, certificate
-- **Location**: Address, town, zip code, owner address
-- **Ownership**: Owner, co-owner, sale information
-- **Valuations**: Sale price, assessment value, appraisal value
-- **Land**: Acreage, frontage, depth, use code, zone, neighborhood
-- **Building**: Count, use type, building records
-- **Historical**: Ownership records, assessment/appraisal history
-
-You can view the whole [data structure here.|https://dbdiagram.io/d/6994cf67bd82f5fce2fb9599]
-The properties and buildings tables have "current" versions as views. The tables are SCD2 Tables, to track history of any changes from the pervious scrape of the data. For example, querying a specific property by pid that has had changes will result in multiple rows from the properties table, but just the latest from the current table.
-
-### Retry Logic
-
-Default configuration:
-- Max retries: 3
-- Initial delay: 1 second
-- Backoff factor: 2x (1s → 2s → 4s)
-- Request timeout: 30 seconds
-
-### Logging
-Logs are written to:
-- **Console**: INFO level and above
-- **File**: `logs/vgsi_scraper_YYYYMMDD_HHMMSS.log` (DEBUG level)
-
-
-## Available Cities
-
-The scraper supports all 80~ Connecticut cities and towns with VGSI databases. Common examples:
-
-- New Haven (`newhaven`)
-- Hartford (`hartford`)
-- Stamford (`stamford`)
-- Bridgeport (`bridgeport`)
-- Greenwich (`greenwich`)
-
-Full list available in `vgsi_cities_ct.json`.
-
-## Parallel Scraping
-
-### Overview
-
-The parallel scraper uses ThreadPoolExecutor for concurrent scraping and stores data in DuckDB for better performance and queryability.
-
-### Quick Start
+### Scraping CT Data (Business Registry)
 
 ```bash
-# Scrape 1,000 properties with 10 workers
-uv run python scripts/scrape_city.py \
-    --city newhaven \
-    --pid-min 1 \
-    --pid-max 1000 \
-    --workers 10 \
-    --rate 5
+# Load all 5 datasets
+uv run scrape load ct_data
 
-# Export to CSV
-uv run python scripts/scrape_city.py --export --output exports/
+# Load specific datasets
+uv run scrape load ct_data --datasets n7gp-d28j,enwv-52we
+
+# Refresh existing data
+uv run scrape refresh ct_data
 ```
 
-### Command-Line Options
-
-```
-# Scraping options
---city CITY              City name (default: newhaven)
---pid-min N              Starting PID (default: 1)
---pid-max N              Ending PID (REQUIRED)
---workers N              Concurrent threads (default: 10)
---rate N                 Requests per second (default: 5)
---db PATH                Database file (default: ctcityscraper.duckdb)
---resume                 Resume from last checkpoint
---checkpoint-every N     Save checkpoint every N properties (default: 100)
---batch-size N           Write to DB every N properties (default: 10)
-
-# Export/query options
---export                 Export database to CSV files
---output DIR             CSV output directory (default: exports/)
---stats                  Show database statistics
-
-# Logging
---log-level LEVEL        DEBUG, INFO, WARNING, ERROR (default: INFO)
-```
-
-### Examples
-
-#### Small Test Scrape
-```bash
-# Test with 50 properties, 3 workers
-uv run python scripts/scrape_city.py \
-    --city newhaven \
-    --pid-min 1 \
-    --pid-max 50 \
-    --workers 3 \
-    --rate 2 \
-    --db test.duckdb
-```
-
-#### Large Production Scrape
-```bash
-# Scrape 10,000 properties with resume capability
-uv run python scripts/scrape_city.py \
-    --city newhaven \
-    --pid-min 1 \
-    --pid-max 10000 \
-    --workers 10 \
-    --rate 5 \
-    --resume \
-    --db newhaven_full.duckdb
-```
-
-#### Resume After Interruption
-```bash
-# If scraping is interrupted (Ctrl+C), resume with:
-uv run python scripts/scrape_city.py \
-    --city newhaven \
-    --pid-min 1 \
-    --pid-max 10000 \
-    --resume
-```
-
-### Performance Tuning
-
-**Worker Count:**
-- Start conservative: 5-10 workers
-- Monitor CPU and network usage
-- More workers ≠ always faster (rate limiting is the bottleneck)
-
-**Rate Limiting:**
-- Conservative: 2-3 req/sec (safest, prevents IP bans)
-- Moderate: 5 req/sec (recommended for production)
-- Aggressive: 10+ req/sec (use with caution, monitor closely)
-
-**Batch Size:**
-- Smaller (5-10): More frequent DB writes, safer but slower
-- Larger (20-50): Fewer DB writes, faster but risk data loss on crash
-
-### Monitoring
+### Cron / Scheduled Runs
 
 ```bash
-# Watch logs in real-time
-tail -f logs/vgsi_scraper_*.log
+# Refresh all known sources and scopes (no flags needed)
+uv run scrape refresh-all --quiet
 
-# Check database stats
-uv run python scripts/scrape_city.py --stats --db newhaven.duckdb
+# Example crontab entry (daily at 2am)
+0 2 * * * cd /path/to/ctcityscraper && uv run scrape refresh-all --quiet --log-level WARNING
+```
 
+## Project Structure
+
+```
+ctcityscraper/
+├── scrape.py              # CLI entry point
+├── src/engine/            # Generic scraper engine (source-agnostic)
+│   ├── base.py            #   SourceDefinition, SourceConfig contracts
+│   ├── database.py        #   ParquetWriter (append-only storage)
+│   ├── engine.py          #   Parallel execution, rate limiting, checkpoints
+│   └── hash.py            #   Row hashing for change detection
+├── scrapers/              # Source-specific scrapers
+│   ├── __init__.py        #   REGISTRY of all sources
+│   ├── vgsi/              #   VGSI property data
+│   │   └── source.py
+│   └── ct_data/           #   CT business registry
+│       └── source.py
+└── tests/
+```
+
+## Data Storage
+
+All data is stored as **append-only parquet files** under `data/`:
+
+```
+data/
+├── newhaven/
+│   ├── properties/
+│   │   └── 20260226_143000_123456.parquet
+│   ├── buildings/
+│   ├── ownership/
+│   └── ...
+├── ct_data/
+│   ├── businesses/
+│   ├── filings/
+│   └── ...
+└── _checkpoints/
+    └── newhaven.json
+```
+
+Each scrape session produces one parquet file per table (batch files are compacted at the end of each run). Every row includes `scraped_at` and `row_hash` metadata. Change detection is done at query time — no data is ever mutated.
+
+### Querying with DuckDB
+
+```sql
+-- Current state of all properties
+SELECT * FROM read_parquet('data/newhaven/properties/*.parquet')
+QUALIFY ROW_NUMBER() OVER (PARTITION BY uuid ORDER BY scraped_at DESC) = 1;
+
+-- Properties that changed between scrapes
+SELECT * FROM (
+    SELECT *,
+        LAG(row_hash) OVER (PARTITION BY uuid ORDER BY scraped_at) AS prev_hash
+    FROM read_parquet('data/newhaven/properties/*.parquet')
+)
+WHERE prev_hash IS NOT NULL AND row_hash != prev_hash;
+```
+
+## CLI Reference
+
+```
+scrape <command> [options]
+
+Commands:
+  load <source> [city]     Load new entries
+  refresh <source> [city]  Re-scrape known entries to detect changes
+  refresh-all              Refresh all known sources and scopes
+  admin <source>           Source-specific admin commands
+
+Global options:
+  --data-dir DIR           Parquet output directory (default: data)
+  --db PATH                DuckDB path for city lookup (default: ctcityscraper.duckdb)
+  --workers N              Concurrent threads (default: 10)
+  --rate N                 Requests per second (default: 5)
+  --batch-size N           Batch write size (default: 10)
+  --checkpoint-every N     Checkpoint frequency (default: 100)
+  --no-resume              Don't resume from checkpoint
+  --base-url URL           Override base URL for the source
+  --quiet                  Suppress progress bars, log to file
+  --log-level LEVEL        DEBUG, INFO, WARNING, ERROR (default: INFO)
+
+VGSI-specific:
+  --entry-id-min N         Starting entry ID (default: 1)
+  --entry-id-max N         Ending entry ID (required for load)
+  --fetch-cities           Fetch VGSI city list (admin command)
+  --download-photos        Download building photos
+  --photo-dir DIR          Photo directory (default: photos)
+
+CT Data-specific:
+  --datasets IDS           Comma-separated dataset IDs (default: all)
+```
+
+## Adding a New Scraper
+
+See [SCRAPER_DEVELOPMENT.md](SCRAPER_DEVELOPMENT.md) for a step-by-step guide.
+
+## Running Tests
+
+```bash
+uv run pytest tests/ -v
 ```
