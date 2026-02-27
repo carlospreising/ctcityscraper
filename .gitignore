@@ -147,3 +147,10 @@ logs/
 *.duckdb.wal
 exports/
 photos/
+
+# Parquet files
+*.Parquet
+data/
+
+# Analysis
+*.ipynb
