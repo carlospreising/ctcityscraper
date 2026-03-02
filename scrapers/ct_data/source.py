@@ -102,117 +102,81 @@ def _fetch_page_with_retry(
     raise last_exception or RuntimeError("Request failed with no recorded exception")
 
 
-def fetch_dataset(base_url: str, dataset_id: int | str) -> dict:
+def fetch_dataset(base_url: str, entry_key: int | str) -> dict:
     """
-    Fetch an entire dataset via paginated SODA API calls.
+    Fetch dataset rows from the SODA API.
 
-    Args:
-        base_url: API base URL (e.g. "https://data.ct.gov/resource/")
-        dataset_id: Socrata dataset ID (e.g. "n7gp-d28j")
+    Accepts two entry_key formats:
+    - "dataset_id:offset" — fetches a single page (used by load)
+    - "dataset_id" — fetches all pages (used by refresh)
 
     Returns:
         {"dataset_id": str, "table_name": str, "rows": list[dict]}
-
-    Raises:
-        InvalidDatasetException: if dataset_id is unknown or API errors
     """
-    dataset_id = str(dataset_id)
-    table_name = DATASETS.get(dataset_id)
-    if table_name is None:
-        raise InvalidDatasetException(f"Unknown dataset ID: {dataset_id}")
+    entry_key = str(entry_key)
 
-    url = f"{base_url}{dataset_id}.json"
-    all_rows = []
-    offset = 0
+    if ":" in entry_key:
+        # Page mode: fetch one page at the given offset
+        dataset_id, offset_str = entry_key.rsplit(":", 1)
+        offset = int(offset_str)
+        table_name = DATASETS.get(dataset_id)
+        if table_name is None:
+            raise InvalidDatasetException(f"Unknown dataset ID: {dataset_id}")
 
-    while True:
+        url = f"{base_url}{dataset_id}.json"
         params = {"$limit": str(PAGE_SIZE), "$offset": str(offset)}
 
         logger.info(f"Fetching {table_name} (offset={offset}, limit={PAGE_SIZE})")
+        rows = _fetch_page_with_retry(url, params)
+        logger.info(f"  Got {len(rows)} rows")
+    else:
+        # Full mode: fetch all pages (used by refresh for known datasets)
+        dataset_id = entry_key
+        table_name = DATASETS.get(dataset_id)
+        if table_name is None:
+            raise InvalidDatasetException(f"Unknown dataset ID: {dataset_id}")
 
-        page = _fetch_page_with_retry(url, params)
+        url = f"{base_url}{dataset_id}.json"
+        rows = []
+        offset = 0
 
-        all_rows.extend(page)
-        logger.info(f"  Got {len(page)} rows (total so far: {len(all_rows)})")
+        while True:
+            params = {"$limit": str(PAGE_SIZE), "$offset": str(offset)}
+            logger.info(f"Fetching {table_name} (offset={offset}, limit={PAGE_SIZE})")
+            page = _fetch_page_with_retry(url, params)
+            rows.extend(page)
+            logger.info(f"  Got {len(page)} rows (total so far: {len(rows)})")
+            if len(page) < PAGE_SIZE:
+                break
+            offset += PAGE_SIZE
 
-        if len(page) < PAGE_SIZE:
-            break
-        offset += PAGE_SIZE
-
-    logger.info(f"Finished {table_name}: {len(all_rows)} total rows")
+        logger.info(f"Finished {table_name}: {len(rows)} total rows")
 
     # Apply field renames (e.g. businesses "id" → "business_id")
     renames = FIELD_RENAMES.get(table_name)
     if renames:
-        all_rows = [
-            {renames.get(k, k): v for k, v in row.items()} for row in all_rows
-        ]
+        rows = [{renames.get(k, k): v for k, v in row.items()} for row in rows]
 
     return {
         "dataset_id": dataset_id,
         "table_name": table_name,
-        "rows": all_rows,
+        "rows": rows,
     }
 
 
-def fetch_dataset_incremental(base_url: str, dataset_id: int | str, since: str) -> dict:
-    """
-    Fetch only rows with create_dt > since.
-
-    Args:
-        base_url: API base URL
-        dataset_id: Socrata dataset ID
-        since: ISO timestamp string for incremental filter
-
-    Returns:
-        Same structure as fetch_dataset
-    """
-    dataset_id = str(dataset_id)
-    table_name = DATASETS.get(dataset_id)
-    if table_name is None:
-        raise InvalidDatasetException(f"Unknown dataset ID: {dataset_id}")
-
-    if table_name == "name_changes":
-        return fetch_dataset(base_url, dataset_id)
-
+def _count_dataset_pages(base_url: str, dataset_id: str) -> int:
+    """Query the SODA API for total row count and return number of pages."""
     url = f"{base_url}{dataset_id}.json"
-    all_rows = []
-    offset = 0
-
-    while True:
-        params = {
-            "$limit": str(PAGE_SIZE),
-            "$offset": str(offset),
-            "$where": f"create_dt > '{since}'",
-        }
-
-        logger.info(
-            f"Fetching {table_name} incremental (since={since}, offset={offset})"
-        )
-
+    params = {"$select": "count(*)", "$limit": "1"}
+    try:
         page = _fetch_page_with_retry(url, params)
-
-        all_rows.extend(page)
-        logger.info(f"  Got {len(page)} rows (total so far: {len(all_rows)})")
-
-        if len(page) < PAGE_SIZE:
-            break
-        offset += PAGE_SIZE
-
-    logger.info(f"Finished {table_name} incremental: {len(all_rows)} new rows")
-
-    # Apply field renames (e.g. businesses "id" → "business_id")
-    renames = FIELD_RENAMES.get(table_name)
-    if renames:
-        all_rows = [
-            {renames.get(k, k): v for k, v in row.items()} for row in all_rows
-        ]
-
-    return {
-        "dataset_id": dataset_id,
-        "table_name": table_name,
-        "rows": all_rows,
-    }
+        total = int(page[0]["count"])
+        pages = (total + PAGE_SIZE - 1) // PAGE_SIZE
+        logger.info(f"Dataset {dataset_id}: {total} rows, {pages} pages")
+        return max(pages, 1)
+    except Exception as e:
+        logger.warning(f"Could not count rows for {dataset_id}: {e}, using 1 page")
+        return 1
 
 
 # ============================================================================
@@ -246,14 +210,18 @@ def flatten_ct_data(results: List[dict]) -> dict[str, list[dict]]:
 
 def make_load_iter(dataset_ids: Optional[List[str]] = None):
     """
-    Returns an iter_entries_fn that yields dataset IDs to fetch.
+    Returns an iter_entries_fn that yields page keys like "dataset_id:offset".
 
-    Args:
-        dataset_ids: Optional list of specific dataset IDs. Defaults to all.
+    Queries each dataset's row count first, then yields one key per page.
+    This keeps memory usage constant regardless of dataset size.
     """
 
     def iter_entries(base_url: str, data_dir: str, scope_key: str) -> Iterator[str]:
-        yield from (dataset_ids or list(DATASETS.keys()))
+        ids = dataset_ids or list(DATASETS.keys())
+        for did in ids:
+            num_pages = _count_dataset_pages(base_url, did)
+            for page_num in range(num_pages):
+                yield f"{did}:{page_num * PAGE_SIZE}"
 
     return iter_entries
 
@@ -267,6 +235,8 @@ def get_known_entry_ids(data_dir: str, scope_key: str) -> list[str]:
         if table_dir.exists() and list(table_dir.glob("*.parquet")):
             result.append(dataset_id)
     return result
+
+
 
 
 # ============================================================================

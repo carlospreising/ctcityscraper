@@ -16,6 +16,21 @@ uv sync
 uv sync --extra dev   # for tests
 ```
 
+### Docker
+
+```bash
+docker build -t ctcityscraper .
+
+# Show help
+docker run --rm ctcityscraper
+
+# Scrape with persistent data volume
+docker run --rm -v ./data:/app/data ctcityscraper load vgsi newhaven --entry-id-max 27000
+
+# Refresh
+docker run --rm -v ./data:/app/data ctcityscraper refresh-all --quiet
+```
+
 ### Scraping VGSI Property Data
 
 ```bash
@@ -63,6 +78,7 @@ uv run scrape refresh-all --quiet
 ```
 ctcityscraper/
 ├── scrape.py              # CLI entry point
+├── Dockerfile             # Multi-stage Docker build
 ├── src/engine/            # Generic scraper engine (source-agnostic)
 │   ├── base.py            #   SourceDefinition, SourceConfig contracts
 │   ├── database.py        #   ParquetWriter (append-only storage)
@@ -97,7 +113,12 @@ data/
     └── newhaven.json
 ```
 
-Each scrape session produces one parquet file per table (batch files are compacted at the end of each run). Every row includes `scraped_at` and `row_hash` metadata. Change detection is done at query time — no data is ever mutated.
+Each scrape session produces one parquet file per table (batch files are compacted at the end of each run). Every row includes `scraped_at` and `row_hash` metadata.
+
+### How load and refresh differ
+
+- **`load`** writes every scraped result to parquet. Running load twice for the same ID range produces duplicate rows.
+- **`refresh`** re-scrapes all known entries but only writes rows whose `row_hash` differs from what's already stored. Unchanged entries are skipped, so a refresh over stable data adds zero new rows. The engine preloads existing hashes at the start of each refresh and logs how many rows were written vs skipped.
 
 ### Querying with DuckDB
 
@@ -122,7 +143,7 @@ scrape <command> [options]
 
 Commands:
   load <source> [city]     Load new entries
-  refresh <source> [city]  Re-scrape known entries to detect changes
+  refresh <source> [city]  Re-scrape known entries, write only changes
   refresh-all              Refresh all known sources and scopes
   admin <source>           Source-specific admin commands
 

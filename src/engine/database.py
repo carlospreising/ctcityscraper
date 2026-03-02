@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import List, Optional, Tuple
 
 import duckdb
+import pyarrow as pa
 
 from .base import SourceDefinition
 from .hash import compute_row_hash
@@ -163,8 +164,6 @@ class ParquetWriter:
 
     def _write_parquet(self, rows: list[dict], path: str):
         """Write a list of dicts to a parquet file using in-memory DuckDB."""
-        import pyarrow as pa
-
         # Convert list of dicts to PyArrow Table, then write via DuckDB
         # This handles type inference properly
         table = pa.Table.from_pylist(rows)
@@ -251,7 +250,7 @@ class ParquetWriter:
                 compact_path = str(table_dir / f"{self._session_ts}.parquet")
 
                 conn.execute(
-                    f"COPY (SELECT * FROM read_parquet('{glob_pattern}')) "
+                    f"COPY (SELECT * FROM read_parquet('{glob_pattern}', union_by_name=true)) "
                     f"TO '{compact_path}' (FORMAT PARQUET, COMPRESSION ZSTD)"
                 )
             finally:

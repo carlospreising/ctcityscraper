@@ -307,5 +307,7 @@ scrape admin <source> [--source-specific-args]
 - **Append-only**: every scrape appends new parquet files, nothing is mutated
 - **Compaction**: at the end of a run, batch files from the session are merged into one file per table
 - **Metadata**: `scraped_at` and `row_hash` are added to every row automatically
-- **Change detection**: done at query time by comparing `row_hash` across versions using window functions
+- **Refresh dedup**: `run_refresh` preloads all existing `row_hash` values before scraping. Rows whose hash already exists in parquet are skipped — only changed data is written. The `row_hash` is an MD5 of all non-metadata fields (see `src/engine/hash.py` for the exclusion list), so identical content always produces the same hash regardless of when it was scraped.
+- **Load behavior**: `run_load` always writes every result. It does not deduplicate against existing data.
+- **Change detection at query time**: use `LAG(row_hash) OVER (PARTITION BY uuid ORDER BY scraped_at)` window functions to find rows where content actually changed between scrapes
 - **Checkpoints**: stored as JSON in `data/_checkpoints/`, enabling resume after interruption

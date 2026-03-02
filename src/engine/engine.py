@@ -9,7 +9,7 @@ and the iter_entries_fn parameter.
 import logging
 import threading
 import time
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import Future, ThreadPoolExecutor, as_completed
 from contextlib import contextmanager
 from typing import Callable
 
@@ -21,6 +21,15 @@ from .database import ParquetWriter
 __all__ = ["RateLimiter", "TooManyErrors", "run_load", "run_refresh"]
 
 logger = logging.getLogger(__name__)
+
+
+def _take(it, n):
+    """Yield up to *n* items from iterator *it*."""
+    for _ in range(n):
+        val = next(it, None)
+        if val is None:
+            return
+        yield val
 
 
 # --- Rate Limiter ---
@@ -99,7 +108,7 @@ def run_load(
     source: SourceDefinition,
     base_url: str,
     iter_entries_fn: Callable,
-    max_workers: int = 10,
+    max_workers: int = 4,
     requests_per_second: float = 5,
     checkpoint_every: int = 100,
     resume_from_checkpoint: bool = True,
@@ -260,8 +269,6 @@ def run_load(
     total_entries = len(entry_ids)
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        futures = {executor.submit(worker, eid): eid for eid in entry_ids}
-
         pbar = (
             tqdm(total=total_entries, desc=f"Scraping {scope_key}", unit="entry")
             if show_progress
@@ -269,10 +276,21 @@ def run_load(
         )
 
         try:
-            for future in as_completed(futures):
-                entry_id = futures[future]
+            aborted = False
+            it = iter(entry_ids)
+            futures: dict[Future, int | str] = {}
+            prefetch = max_workers * 2
+
+            # Seed initial batch of futures
+            for eid in _take(it, prefetch):
+                futures[executor.submit(worker, eid)] = eid
+
+            while futures:
+                done = next(iter(as_completed(futures)))
+                entry_id = futures.pop(done)
+
                 try:
-                    result, scrape_time, is_error = future.result()
+                    result, scrape_time, is_error = done.result()
                     handle_result(result, entry_id, is_error)
                 except TooManyErrors:
                     logger.error(
@@ -281,9 +299,15 @@ def run_load(
                     )
                     for f in futures:
                         f.cancel()
+                    aborted = True
                     break
                 except Exception as e:
                     logger.error(f"Exception for entry {entry_id}: {e}")
+
+                # Submit one more to replace the completed one
+                nxt = next(it, None)
+                if nxt is not None:
+                    futures[executor.submit(worker, nxt)] = nxt
 
                 if pbar:
                     pbar.update(1)
@@ -336,7 +360,7 @@ def run_refresh(
     writer: ParquetWriter,
     source: SourceDefinition,
     base_url: str,
-    max_workers: int = 10,
+    max_workers: int = 4,
     requests_per_second: float = 5,
     batch_size: int = 10,
     show_progress: bool = True,
@@ -432,8 +456,6 @@ def run_refresh(
             completed["count"] += 1
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        futures = {executor.submit(worker, eid): eid for eid in entry_ids}
-
         pbar = (
             tqdm(total=len(entry_ids), desc=f"Refreshing {scope_key}", unit="entry")
             if show_progress
@@ -441,10 +463,19 @@ def run_refresh(
         )
 
         try:
-            for future in as_completed(futures):
-                entry_id = futures[future]
+            it = iter(entry_ids)
+            futures: dict[Future, int | str] = {}
+            prefetch = max_workers * 2
+
+            for eid in _take(it, prefetch):
+                futures[executor.submit(worker, eid)] = eid
+
+            while futures:
+                done = next(iter(as_completed(futures)))
+                entry_id = futures.pop(done)
+
                 try:
-                    result, is_error = future.result()
+                    result, is_error = done.result()
                     handle_result(result, is_error)
                 except TooManyErrors:
                     logger.error(
@@ -456,6 +487,10 @@ def run_refresh(
                     break
                 except Exception as e:
                     logger.error(f"Exception for entry {entry_id}: {e}")
+
+                nxt = next(it, None)
+                if nxt is not None:
+                    futures[executor.submit(worker, nxt)] = nxt
 
                 if pbar:
                     pbar.update(1)

@@ -183,15 +183,26 @@ class TestRowHash:
 class TestIteration:
     """Test make_load_iter and get_known_entry_ids."""
 
-    def test_make_load_iter_all(self):
+    @patch("scrapers.ct_data.source._count_dataset_pages", return_value=1)
+    def test_make_load_iter_all(self, mock_count):
         iter_fn = make_load_iter()
         ids = list(iter_fn("http://example.com/", "somedir", "ct_data"))
-        assert set(ids) == set(DATASETS.keys())
+        # Each dataset yields one page key like "dataset_id:0"
+        dataset_ids = {k.rsplit(":", 1)[0] for k in ids}
+        assert dataset_ids == set(DATASETS.keys())
 
-    def test_make_load_iter_specific(self):
+    @patch("scrapers.ct_data.source._count_dataset_pages", return_value=1)
+    def test_make_load_iter_specific(self, mock_count):
         iter_fn = make_load_iter(["n7gp-d28j", "enwv-52we"])
         ids = list(iter_fn("http://example.com/", "somedir", "ct_data"))
-        assert ids == ["n7gp-d28j", "enwv-52we"]
+        assert ids == ["n7gp-d28j:0", "enwv-52we:0"]
+
+    @patch("scrapers.ct_data.source._count_dataset_pages", return_value=3)
+    def test_make_load_iter_multiple_pages(self, mock_count):
+        iter_fn = make_load_iter(["n7gp-d28j"])
+        ids = list(iter_fn("http://example.com/", "somedir", "ct_data"))
+        from scrapers.ct_data.source import PAGE_SIZE
+        assert ids == [f"n7gp-d28j:{i * PAGE_SIZE}" for i in range(3)]
 
     def test_get_known_entry_ids_empty(self, temp_dir):
         ids = get_known_entry_ids(temp_dir, "ct_data")
@@ -316,53 +327,17 @@ class TestFetchRetry:
         mock_curl.get.assert_not_called()
 
 
-class TestFetchDatasetIncremental:
-    """Test incremental fetching."""
-
-    @patch("scrapers.ct_data.source.curl_requests")
-    def test_incremental_adds_where_clause(self, mock_curl):
-        mock_response = MagicMock()
-        mock_response.status_code = 200
-        mock_response.json.return_value = [{"business_id": "001"}]
-        mock_curl.get.return_value = mock_response
-
-        from scrapers.ct_data.source import fetch_dataset_incremental
-
-        fetch_dataset_incremental(
-            "https://data.ct.gov/resource/", "n7gp-d28j", "2026-01-01"
-        )
-
-        call_args = mock_curl.get.call_args
-        params = call_args[1]["params"]
-        assert "$where" in params
-        assert "create_dt > '2026-01-01'" in params["$where"]
-
-    @patch("scrapers.ct_data.source.curl_requests")
-    def test_incremental_name_changes_does_full_fetch(self, mock_curl):
-        mock_response = MagicMock()
-        mock_response.status_code = 200
-        mock_response.json.return_value = [{"unique_key": "UK1"}]
-        mock_curl.get.return_value = mock_response
-
-        from scrapers.ct_data.source import fetch_dataset_incremental
-
-        fetch_dataset_incremental(
-            "https://data.ct.gov/resource/", "enwv-52we", "2026-01-01"
-        )
-
-        call_args = mock_curl.get.call_args
-        params = call_args[1]["params"]
-        assert "$where" not in params
-
-
 class TestIntegration:
     """Integration tests: scrape -> write -> query via parquet."""
 
+    @patch("scrapers.ct_data.source._count_dataset_pages", return_value=1)
     @patch.object(CT_DATA_SOURCE, "scrape_fn")
-    def test_full_load_workflow(self, mock_scrape, temp_dir):
+    def test_full_load_workflow(self, mock_scrape, mock_count, temp_dir):
         from src.engine import run_load
 
-        def fake_fetch(base_url, dataset_id):
+        def fake_fetch(base_url, entry_key):
+            # entry_key is now "dataset_id:offset" for load
+            dataset_id = str(entry_key).rsplit(":", 1)[0] if ":" in str(entry_key) else str(entry_key)
             table_name = DATASETS[dataset_id]
             if table_name == "businesses":
                 return {
@@ -409,16 +384,21 @@ class TestIntegration:
         finally:
             conn.close()
 
+    @patch("scrapers.ct_data.source._count_dataset_pages", return_value=1)
     @patch.object(CT_DATA_SOURCE, "scrape_fn")
-    def test_refresh_appends_new_data(self, mock_scrape, temp_dir):
+    def test_refresh_appends_new_data(self, mock_scrape, mock_count, temp_dir):
         """Refresh appends new rows; changes detected at query time."""
         from src.engine import run_load, run_refresh
 
-        mock_scrape.side_effect = lambda url, did: {
-            "dataset_id": did,
-            "table_name": DATASETS[did],
+        def _resolve_dataset_id(entry_key):
+            entry_key = str(entry_key)
+            return entry_key.rsplit(":", 1)[0] if ":" in entry_key else entry_key
+
+        mock_scrape.side_effect = lambda url, ek: {
+            "dataset_id": _resolve_dataset_id(ek),
+            "table_name": DATASETS[_resolve_dataset_id(ek)],
             "rows": [{"business_id": "R1", "name": "Original", "status": "Active"}]
-            if DATASETS[did] == "businesses"
+            if DATASETS[_resolve_dataset_id(ek)] == "businesses"
             else [],
         }
 
@@ -435,11 +415,11 @@ class TestIntegration:
         )
 
         # Refresh with changed name
-        mock_scrape.side_effect = lambda url, did: {
-            "dataset_id": did,
-            "table_name": DATASETS[did],
+        mock_scrape.side_effect = lambda url, ek: {
+            "dataset_id": _resolve_dataset_id(ek),
+            "table_name": DATASETS[_resolve_dataset_id(ek)],
             "rows": [{"business_id": "R1", "name": "Updated", "status": "Active"}]
-            if DATASETS[did] == "businesses"
+            if DATASETS[_resolve_dataset_id(ek)] == "businesses"
             else [],
         }
 

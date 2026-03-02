@@ -10,6 +10,7 @@ import hashlib
 import json
 import logging
 import re
+import threading
 import time
 import uuid
 import warnings
@@ -257,28 +258,40 @@ def fetch_page(
 # ============================================================================
 
 
-def _extract_spans(soup, tag_mapping):
-    """Extract text from span elements by ID mapping."""
-    result = {}
+def _build_span_index(soup):
+    """Build a dict mapping span id -> span element, one pass over all spans."""
+    index = {}
     for tag in soup.find_all("span"):
         tag_id = tag.get("id")
-        if tag_id and tag_id in tag_mapping:
-            field_name = tag_mapping[tag_id]
+        if tag_id:
+            index[tag_id] = tag
+    return index
+
+
+def _extract_spans(span_index, tag_mapping):
+    """Extract text from span elements by ID mapping using prebuilt index."""
+    result = {}
+    for tag_id, field_name in tag_mapping.items():
+        tag = span_index.get(tag_id)
+        if tag is not None:
             result[field_name] = tag.get_text(separator=" ", strip=True)
     return result
 
 
-def parse_property(soup, pid):
+def parse_property(soup, pid, span_index=None):
     """Parse property-level fields from a VGSI page.
 
     Any MainContent_lbl* spans not in the known mapping are captured
     in an ``extra_fields`` column as a JSON string so new fields that
     VGSI adds later are never silently lost.
     """
-    data = _extract_spans(soup, PROPERTY_TAGS)
+    if span_index is None:
+        span_index = _build_span_index(soup)
+
+    data = _extract_spans(span_index, PROPERTY_TAGS)
 
     for land_id in _LAND_SIZE_IDS:
-        el = soup.find("span", id=land_id)
+        el = span_index.get(land_id)
         if el:
             data["land_size_acres"] = el.get_text(strip=True)
             break
@@ -287,11 +300,9 @@ def parse_property(soup, pid):
 
     # Capture any MainContent_lbl* spans we don't have a mapping for
     extra = {}
-    for tag in soup.find_all("span"):
-        tag_id = tag.get("id")
+    for tag_id, tag in span_index.items():
         if (
-            tag_id
-            and tag_id.startswith("MainContent_lbl")
+            tag_id.startswith("MainContent_lbl")
             and tag_id not in _KNOWN_PROPERTY_SPAN_IDS
         ):
             text = tag.get_text(separator=" ", strip=True)
@@ -325,8 +336,11 @@ def parse_property(soup, pid):
     return data
 
 
-def parse_buildings(soup, building_count, pid):
+def parse_buildings(soup, building_count, pid, span_index=None):
     """Parse all building data from a VGSI page."""
+    if span_index is None:
+        span_index = _build_span_index(soup)
+
     buildings = []
     if building_count is None:
         building_count = 0
@@ -335,11 +349,11 @@ def parse_buildings(soup, building_count, pid):
         try:
             prefix = f"MainContent_ctl0{bid + 2}"
 
-            year_el = soup.find("span", id=f"{prefix}_lblYearBuilt")
-            area_el = soup.find("span", id=f"{prefix}_lblBldArea")
-            rcn_el = soup.find("span", id=f"{prefix}_lblRcn")
-            rcnld_el = soup.find("span", id=f"{prefix}_lblRcnld")
-            pctgood_el = soup.find("span", id=f"{prefix}_lblPctGood")
+            year_el = span_index.get(f"{prefix}_lblYearBuilt")
+            area_el = span_index.get(f"{prefix}_lblBldArea")
+            rcn_el = span_index.get(f"{prefix}_lblRcn")
+            rcnld_el = span_index.get(f"{prefix}_lblRcnld")
+            pctgood_el = span_index.get(f"{prefix}_lblPctGood")
 
             if year_el is None and area_el is None:
                 if bid < building_count:
@@ -502,14 +516,15 @@ def scrape_property(base_url, pid):
     ownership, extra_features, outbuildings.
     """
     soup = fetch_page(base_url, pid)
+    span_index = _build_span_index(soup)
 
-    prop = parse_property(soup, pid)
+    prop = parse_property(soup, pid, span_index=span_index)
     property_uuid = prop["uuid"]
     building_count = prop.get("building_count") or 0
 
     prop["vgsi_url"] = f"{base_url}Parcel.aspx?pid={pid}"
 
-    buildings = parse_buildings(soup, building_count, pid)
+    buildings = parse_buildings(soup, building_count, pid, span_index=span_index)
     for b in buildings:
         b["property_uuid"] = property_uuid
         b["pid"] = pid
@@ -804,13 +819,20 @@ def get_known_entry_ids(data_dir: str, scope_key: str) -> list[int]:
 # ============================================================================
 
 
+def _empty_df():
+    """Return an empty DataFrame without importing pandas directly."""
+    conn = duckdb.connect()
+    try:
+        return conn.execute("SELECT 1 WHERE false").df()
+    finally:
+        conn.close()
+
+
 def get_property_history(data_dir: str, scope_key: str, uuid_val: str):
     """Get all versions of a property from parquet files."""
-    import pandas as pd
-
     glob_results = list(Path(data_dir).glob(f"{scope_key}/properties/*.parquet"))
     if not glob_results:
-        return pd.DataFrame()
+        return _empty_df()
 
     pattern = f"{data_dir}/{scope_key}/properties/*.parquet"
     conn = duckdb.connect()
@@ -835,11 +857,9 @@ def get_property_history(data_dir: str, scope_key: str, uuid_val: str):
 
 def get_changed_properties(data_dir: str, scope_key: str, since):
     """Return properties that have changed versions after `since`."""
-    import pandas as pd
-
     glob_results = list(Path(data_dir).glob(f"{scope_key}/properties/*.parquet"))
     if not glob_results:
-        return pd.DataFrame()
+        return _empty_df()
 
     pattern = f"{data_dir}/{scope_key}/properties/*.parquet"
     conn = duckdb.connect()
@@ -907,8 +927,6 @@ class VGSIConfig(SourceConfig):
         )
 
     def resolve(self, args):
-        import threading
-
         if not args.city:
             raise ValueError(
                 "city is required for VGSI source (or use: scrape admin vgsi --fetch-cities)"
@@ -966,8 +984,6 @@ class VGSIConfig(SourceConfig):
             print(changed[cols].to_string(index=False))
 
     def run_admin(self, args):
-        import threading
-
         if getattr(args, "fetch_cities", False):
             cities = fetch_vgsi_cities()
             conn = duckdb.connect(args.db)
