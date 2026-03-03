@@ -216,10 +216,32 @@ class ParquetWriter:
     # --- Query helpers ---
 
     def get_known_entry_ids(self) -> list:
-        """Query parquet files for known entry IDs. Delegates to source."""
-        return self.source.get_known_entry_ids_fn(
-            str(self.data_dir), self.scope_key
-        )
+        """Resolve entry IDs for refresh from source.entry_id_source.
+
+        If entry_id_source is a str of the form "table/column", queries
+        SELECT DISTINCT {column} from that table's parquet files.
+        If entry_id_source is a list, returns it as-is.
+        """
+        src = self.source.entry_id_source
+        if isinstance(src, list):
+            return src
+
+        # str form: "table/column"
+        table, column = src.split("/", 1)
+        table_dir = self.scope_dir / table
+        if not table_dir.exists():
+            return []
+        pattern = str(table_dir / "*.parquet")
+        conn = duckdb.connect()
+        try:
+            rows = conn.execute(
+                f"SELECT DISTINCT {column} FROM read_parquet('{pattern}') ORDER BY {column}"
+            ).fetchall()
+            return [r[0] for r in rows]
+        except Exception:
+            return []
+        finally:
+            conn.close()
 
     def compact(self):
         """

@@ -184,7 +184,7 @@ def _count_dataset_pages(base_url: str, dataset_id: str) -> int:
 # ============================================================================
 
 
-def flatten_ct_data(results: List[dict]) -> dict[str, list[dict]]:
+def flatten_llc_ct_data(results: List[dict]) -> dict[str, list[dict]]:
     """
     Flatten CT Data scrape results into per-table row dicts.
 
@@ -226,18 +226,6 @@ def make_load_iter(dataset_ids: Optional[List[str]] = None):
     return iter_entries
 
 
-def get_known_entry_ids(data_dir: str, scope_key: str) -> list[str]:
-    """Return dataset IDs whose tables have parquet data."""
-    result = []
-    base = Path(data_dir) / scope_key
-    for dataset_id, table_name in DATASETS.items():
-        table_dir = base / table_name
-        if table_dir.exists() and list(table_dir.glob("*.parquet")):
-            result.append(dataset_id)
-    return result
-
-
-
 
 # ============================================================================
 # Source Definition
@@ -245,10 +233,10 @@ def get_known_entry_ids(data_dir: str, scope_key: str) -> list[str]:
 
 
 CT_DATA_SOURCE = SourceDefinition(
-    source_key="ct_data",
+    source_key="llc_ct_data",
     scrape_fn=fetch_dataset,
-    flatten_fn=flatten_ct_data,
-    get_known_entry_ids_fn=get_known_entry_ids,
+    flatten_fn=flatten_llc_ct_data,
+    entry_id_source=list(DATASETS.keys()),
     invalid_entry_exception=InvalidDatasetException,
 )
 
@@ -275,7 +263,7 @@ class CTDataConfig(SourceConfig):
         base_url = args.base_url or self.default_base_url
         if not base_url:
             raise ValueError("base_url is required (provide --base-url or set default_base_url)")
-        scope_key = args.city or "ct_data"
+        scope_key = "llc_ct_data"
 
         iter_fn = None
         if not getattr(args, "refresh", False):

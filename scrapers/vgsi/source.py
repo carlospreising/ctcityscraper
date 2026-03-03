@@ -795,24 +795,6 @@ def make_load_iter(entry_id_min: int = 1, entry_id_max: int | None = None):
     return iter_entries
 
 
-def get_known_entry_ids(data_dir: str, scope_key: str) -> list[int]:
-    """Return all PIDs from existing parquet files."""
-    pattern = f"{data_dir}/{scope_key}/properties/*.parquet"
-    glob_results = list(Path(data_dir).glob(f"{scope_key}/properties/*.parquet"))
-    if not glob_results:
-        return []
-
-    conn = duckdb.connect()
-    try:
-        rows = conn.execute(
-            f"SELECT DISTINCT pid FROM read_parquet('{pattern}') ORDER BY pid"
-        ).fetchall()
-        return [r[0] for r in rows]
-    except Exception:
-        return []
-    finally:
-        conn.close()
-
 
 # ============================================================================
 # SCD Type 2 Query Helpers (for use after data is written)
@@ -891,7 +873,7 @@ VGSI_SOURCE = SourceDefinition(
     source_key="vgsi",
     scrape_fn=scrape_property,
     flatten_fn=flatten_vgsi,
-    get_known_entry_ids_fn=get_known_entry_ids,
+    entry_id_source="properties/pid",
     invalid_entry_exception=InvalidEntryException,
     get_photo_items_fn=_get_photo_items,
     download_fn=download_photo,

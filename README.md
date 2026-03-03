@@ -54,13 +54,13 @@ uv run scrape load vgsi newhaven --entry-id-max 27000 --download-photos
 
 ```bash
 # Load all 5 datasets
-uv run scrape load ct_data
+uv run scrape load llc_ct_data
 
 # Load specific datasets
-uv run scrape load ct_data --datasets n7gp-d28j,enwv-52we
+uv run scrape load llc_ct_data --datasets n7gp-d28j,enwv-52we
 
 # Refresh existing data
-uv run scrape refresh ct_data
+uv run scrape refresh llc_ct_data
 ```
 
 ### Cron / Scheduled Runs
@@ -88,7 +88,7 @@ ctcityscraper/
 │   ├── __init__.py        #   REGISTRY of all sources
 │   ├── vgsi/              #   VGSI property data
 │   │   └── source.py
-│   └── ct_data/           #   CT business registry
+│   └── llc_ct_data/           #   CT business registry
 │       └── source.py
 └── tests/
 ```
@@ -105,7 +105,7 @@ data/
 │   ├── buildings/
 │   ├── ownership/
 │   └── ...
-├── ct_data/
+├── llc_ct_data/
 │   ├── businesses/
 │   ├── filings/
 │   └── ...

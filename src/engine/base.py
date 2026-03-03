@@ -10,7 +10,7 @@ Every source must provide a SourceDefinition and a SourceConfig.
 import argparse
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Union
 
 
 @dataclass
@@ -35,9 +35,11 @@ class SourceDefinition:
     # Keys are table names, values are lists of row dicts.
     flatten_fn: Callable[[list[dict]], dict[str, list[dict]]]
 
-    # (data_dir: str, scope_key: str) -> list[int | str]
-    # Query known entry IDs from parquet files. Used by refresh mode.
-    get_known_entry_ids_fn: Callable[[str, str], list]
+    # How to resolve known entry IDs for refresh mode. Two forms:
+    #   str  — "table/column", e.g. "properties/pid": queries
+    #          SELECT DISTINCT {column} FROM read_parquet('{scope_dir}/{table}/*.parquet')
+    #   list — static list of entry IDs returned as-is (e.g. dataset ID strings)
+    entry_id_source: Union[str, list]
 
     # Exception type(s) that mean "entry doesn't exist" — the engine catches
     # these silently and skips the entry.

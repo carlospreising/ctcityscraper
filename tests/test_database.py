@@ -17,7 +17,6 @@ from src.engine.hash import compute_row_hash
 from scrapers.vgsi.source import (
     VGSI_SOURCE,
     get_changed_properties,
-    get_known_entry_ids,
     get_property_history,
 )
 
@@ -599,25 +598,25 @@ class TestRefreshHelpers:
             },
         }
 
-    def test_get_known_entry_ids_empty(self, temp_dir):
+    def test_get_known_entry_ids_empty(self, writer):
         """Returns empty list when no parquet files exist."""
-        entry_ids = get_known_entry_ids(temp_dir, "testcity")
+        entry_ids = writer.get_known_entry_ids()
         assert entry_ids == []
 
-    def test_get_known_entry_ids_returns_all_pids(self, writer, temp_dir):
+    def test_get_known_entry_ids_returns_all_pids(self, writer):
         """Returns all distinct PIDs sorted."""
         for pid in [10, 5, 1, 20]:
             writer.write_batch([self._make_result(f"uuid-{pid}", pid)])
 
-        entry_ids = get_known_entry_ids(temp_dir, "testcity")
+        entry_ids = writer.get_known_entry_ids()
         assert entry_ids == [1, 5, 10, 20]
 
-    def test_get_known_entry_ids_deduplicates(self, writer, temp_dir):
+    def test_get_known_entry_ids_deduplicates(self, writer):
         """Each PID appears once even after multiple writes."""
         writer.write_batch([self._make_result("uuid-42", 42, 100000.0)])
         writer.write_batch([self._make_result("uuid-42", 42, 200000.0)])
 
-        entry_ids = get_known_entry_ids(temp_dir, "testcity")
+        entry_ids = writer.get_known_entry_ids()
         assert entry_ids.count(42) == 1
 
     def test_get_changed_properties_empty(self, temp_dir):

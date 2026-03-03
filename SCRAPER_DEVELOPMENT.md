@@ -85,7 +85,7 @@ def flatten_results(results: list[dict]) -> dict[str, list[dict]]:
 
 The engine automatically adds `scraped_at` and `row_hash` to every row before writing.
 
-### 4. Define iteration and known-entry-ID functions
+### 4. Define iteration
 
 ```python
 from pathlib import Path
@@ -95,23 +95,9 @@ def make_load_iter(start: int = 1, end: int = 1000):
     def iter_entries(base_url: str, data_dir: str, scope_key: str) -> Iterator[int]:
         yield from range(start, end + 1)
     return iter_entries
-
-def get_known_entry_ids(data_dir: str, scope_key: str) -> list:
-    import duckdb
-    parquet_dir = Path(data_dir) / scope_key / "entries"
-    files = list(parquet_dir.glob("*.parquet"))
-    if not files:
-        return []
-
-    conn = duckdb.connect()
-    try:
-        rows = conn.execute(
-            f"SELECT DISTINCT entry_id FROM read_parquet('{parquet_dir}/*.parquet')"
-        ).fetchall()
-        return [r[0] for r in rows]
-    finally:
-        conn.close()
 ```
+
+Note: ```scope_key``` is required, allows the engine to create a dataset per "scope" for one scraper. VGSI Scraper creates a directory per city.
 
 ### 5. Create the SourceDefinition
 
@@ -122,8 +108,34 @@ MY_SOURCE = SourceDefinition(
     source_key="my_source",
     scrape_fn=scrape_entry,
     flatten_fn=flatten_results,
-    get_known_entry_ids_fn=get_known_entry_ids,
+    entry_id_source="properties/pid",
     invalid_entry_exception=InvalidEntryException,
+)
+```
+
+The `entry_id_source` field takes a list of strings, or a path that leads to a column in a table. This column should represent "an entry id", a string that can be passed on to your scraper to fetch a page. In VGSI, this string includes the base url of the city, and the PID.
+
+` "example_table/example_column" `
+
+You can also pass a list of any kind, and iterate through those as the entry-id's. LLC_DATA_CT uses defined dataset id's.
+
+```
+DATASETS = {
+    "n7gp-d28j": "businesses",
+    "ah3s-bes7": "filings",
+    "qh2m-n44y": "agents",
+    "ka36-64k6": "principals",
+    "enwv-52we": "name_changes",
+}
+
+...
+
+CT_DATA_SOURCE = SourceDefinition(
+    source_key="llc_ct_data",
+    scrape_fn=fetch_dataset,
+    flatten_fn=flatten_llc_ct_data,
+    entry_id_source=list(DATASETS.keys()),
+    invalid_entry_exception=InvalidDatasetException,
 )
 ```
 
@@ -190,7 +202,7 @@ from .my_source import MY_SOURCE_CONFIG
 
 REGISTRY = {
     "vgsi": VGSI_CONFIG,
-    "ct_data": CT_DATA_CONFIG,
+    "llc_ct_data": CT_DATA_CONFIG,
     "my_source": MY_SOURCE_CONFIG,  # <-- add this
 }
 ```

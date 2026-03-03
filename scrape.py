@@ -4,7 +4,7 @@ CLI entry point for the multi-source scraper engine.
 
 Usage:
     scrape load vgsi newhaven --entry-id-max 30000
-    scrape load ct_data --datasets enwv-52we
+    scrape load llc_ct_data --datasets enwv-52we
     scrape refresh vgsi newhaven
     scrape refresh-all --quiet
     scrape admin vgsi --fetch-cities
