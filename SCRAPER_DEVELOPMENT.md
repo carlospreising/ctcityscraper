@@ -143,6 +143,8 @@ CT_DATA_SOURCE = SourceDefinition(
 
 The `SourceConfig` tells the CLI how to handle your source — what args it needs and how to resolve them into engine parameters.
 
+In `def resvolve()`, `scope_key` refers to the dataset scope of the scraper. For example, in VGSI it's per city.
+
 ```python
 from src.engine.base import ResolvedParams, SourceConfig
 
