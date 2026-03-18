@@ -276,7 +276,6 @@ def run_load(
         )
 
         try:
-            aborted = False
             it = iter(entry_ids)
             futures: dict[Future, int | str] = {}
             prefetch = max_workers * 2
@@ -299,7 +298,6 @@ def run_load(
                     )
                     for f in futures:
                         f.cancel()
-                    aborted = True
                     break
                 except Exception as e:
                     logger.error(f"Exception for entry {entry_id}: {e}")
