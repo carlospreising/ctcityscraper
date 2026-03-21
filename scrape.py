@@ -11,6 +11,7 @@ Usage:
 """
 
 import logging
+import os
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -128,8 +129,8 @@ def main():
 
     # Shared args inherited by all subcommands
     shared = argparse.ArgumentParser(add_help=False)
-    shared.add_argument("--db", default="ctcityscraper.duckdb", help="DuckDB path (city lookup)")
-    shared.add_argument("--data-dir", default="data", help="Parquet output directory")
+    shared.add_argument("--db", default=os.environ.get("SCRAPER_DB", "ctcityscraper.duckdb"), help="DuckDB path (city lookup)")
+    shared.add_argument("--data-dir", default=os.environ.get("SCRAPER_DATA_DIR", "data"), help="Parquet output directory")
     shared.add_argument("--workers", type=int, default=4, help="Concurrent threads")
     shared.add_argument("--rate", type=float, default=5, help="Requests per second")
     shared.add_argument("--batch-size", type=int, default=10, help="Batch write size")
