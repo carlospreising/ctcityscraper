@@ -17,7 +17,7 @@ RUN uv sync --frozen --no-dev --no-install-project
 # Copy source and install the project itself
 COPY src/ src/
 COPY scrapers/ scrapers/
-COPY scrape.py vgsi_cities_ct.json ./
+COPY vgsi_cities_ct.json ./
 RUN uv sync --frozen --no-dev
 
 # ---- runtime stage ----

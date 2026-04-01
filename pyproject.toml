@@ -19,7 +19,7 @@ dependencies = [
 ]
 
 [project.scripts]
-scrape = "scrape:main"
+scrape = "src.scrape:main"
 
 [project.optional-dependencies]
 dev = [

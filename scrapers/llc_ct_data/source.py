@@ -119,8 +119,15 @@ def fetch_dataset(base_url: str, entry_key: int | str) -> dict:
         # Page mode: fetch one page at the given offset
         dataset_id, offset_str = entry_key.rsplit(":", 1)
         offset = int(offset_str)
-        table_name = DATASETS.get(dataset_id, dataset_id)
+    else:
+        dataset_id = entry_key
 
+    if dataset_id not in DATASETS:
+        raise InvalidDatasetException(f"Unknown dataset: {dataset_id}")
+
+    table_name = DATASETS[dataset_id]
+
+    if ":" in entry_key:
         url = f"{base_url}{dataset_id}.json"
         params = {"$limit": str(PAGE_SIZE), "$offset": str(offset)}
 
@@ -129,8 +136,6 @@ def fetch_dataset(base_url: str, entry_key: int | str) -> dict:
         logger.info(f"  Got {len(rows)} rows")
     else:
         # Full mode: fetch all pages (used by refresh for known datasets)
-        dataset_id = entry_key
-        table_name = DATASETS.get(dataset_id, dataset_id)
 
         url = f"{base_url}{dataset_id}.json"
         rows = []
